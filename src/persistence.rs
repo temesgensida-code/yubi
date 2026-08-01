@@ -21,6 +21,42 @@ pub struct SessionSnapshot {
     /// Finger key (see `Finger::as_key`) -> accuracy percentage (0-100) for
     /// that session.
     pub finger_accuracy: HashMap<String, f64>,
+
+    /// Session duration in seconds.
+    #[serde(default)]
+    pub session_duration_secs: Option<f64>,
+    /// Difficulty level.
+    #[serde(default)]
+    pub level: Option<String>,
+    /// Training mode.
+    #[serde(default)]
+    pub training_mode: Option<String>,
+    /// Round length setting.
+    #[serde(default)]
+    pub round_length: Option<String>,
+    /// Overall accuracy percentage (0-100).
+    #[serde(default)]
+    pub overall_accuracy: Option<f64>,
+    /// Total keystrokes typed in the session.
+    #[serde(default)]
+    pub total_keystrokes: Option<u64>,
+    /// Correct keystrokes typed in the session.
+    #[serde(default)]
+    pub correct_keystrokes: Option<u64>,
+    /// Error count in the session.
+    #[serde(default)]
+    pub error_count: Option<u64>,
+
+    /// Finger key -> total keystrokes on that finger for this session.
+    #[serde(default)]
+    pub finger_keystrokes: HashMap<String, u64>,
+    /// Finger key -> error count on that finger for this session.
+    #[serde(default)]
+    pub finger_errors: HashMap<String, u64>,
+
+    /// Top mistyped character pairs formatted as "expected->actual:count;..."
+    #[serde(default)]
+    pub top_mistakes: Option<String>,
 }
 
 impl SessionSnapshot {
@@ -31,11 +67,22 @@ impl SessionSnapshot {
             timestamp: current_unix_timestamp(),
             wpm,
             finger_accuracy: engine.accuracy_snapshot(),
+            session_duration_secs: None,
+            level: None,
+            training_mode: None,
+            round_length: None,
+            overall_accuracy: None,
+            total_keystrokes: None,
+            correct_keystrokes: None,
+            error_count: None,
+            finger_keystrokes: HashMap::new(),
+            finger_errors: HashMap::new(),
+            top_mistakes: None,
         }
     }
 }
 
-fn current_unix_timestamp() -> u64 {
+pub fn current_unix_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
@@ -202,9 +249,25 @@ pub fn export_history_csv(history: &UserHistory, path: &Path) -> io::Result<()> 
     let mut header: Vec<String> = vec![
         "date_time".to_string(),
         "timestamp".to_string(),
+        "session_duration_secs".to_string(),
+        "level".to_string(),
+        "training_mode".to_string(),
+        "round_length".to_string(),
         "wpm".to_string(),
+        "overall_accuracy".to_string(),
+        "total_keystrokes".to_string(),
+        "correct_keystrokes".to_string(),
+        "error_count".to_string(),
     ];
-    header.extend(Finger::ALL.iter().map(|f| f.as_key().to_string()));
+
+    for finger in Finger::ALL {
+        let key = finger.as_key();
+        header.push(key.to_string());
+        header.push(format!("{key}_count"));
+        header.push(format!("{key}_errors"));
+    }
+    header.push("top_mistakes".to_string());
+
     out.push_str(&header.join(","));
     out.push('\n');
 
@@ -214,17 +277,39 @@ pub fn export_history_csv(history: &UserHistory, path: &Path) -> io::Result<()> 
             chrono::LocalResult::Ambiguous(dt, _) => dt.format("%Y-%m-%d %H:%M:%S").to_string(),
             chrono::LocalResult::None => "unknown".to_string(),
         };
+
         let mut fields: Vec<String> = vec![
             date_time,
             session.timestamp.to_string(),
+            session.session_duration_secs.map_or(String::new(), |v| format!("{:.1}", v)),
+            session.level.clone().unwrap_or_default(),
+            session.training_mode.clone().unwrap_or_default(),
+            session.round_length.clone().unwrap_or_default(),
             format!("{:.2}", session.wpm),
+            session.overall_accuracy.map_or(String::new(), |v| format!("{:.2}", v)),
+            session.total_keystrokes.map_or(String::new(), |v| v.to_string()),
+            session.correct_keystrokes.map_or(String::new(), |v| v.to_string()),
+            session.error_count.map_or(String::new(), |v| v.to_string()),
         ];
+
         for finger in Finger::ALL {
-            match session.finger_accuracy.get(finger.as_key()) {
+            let key = finger.as_key();
+            match session.finger_accuracy.get(key) {
                 Some(acc) => fields.push(format!("{acc:.2}")),
                 None => fields.push(String::new()),
             }
+            match session.finger_keystrokes.get(key) {
+                Some(cnt) => fields.push(cnt.to_string()),
+                None => fields.push(String::new()),
+            }
+            match session.finger_errors.get(key) {
+                Some(errs) => fields.push(errs.to_string()),
+                None => fields.push(String::new()),
+            }
         }
+
+        fields.push(session.top_mistakes.clone().unwrap_or_default());
+
         out.push_str(&fields.join(","));
         out.push('\n');
     }
