@@ -89,16 +89,39 @@ if [ "${DOWNLOAD_SUCCESS}" = false ]; then
     log_warn "Pre-built release asset not found online or download failed."
     
     # Check if we are inside the source directory or cargo is available
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" 2>/dev/null || echo ".")" && pwd)"
     if [ -f "${SCRIPT_DIR}/Cargo.toml" ] && command -v cargo >/dev/null 2>&1; then
         log_info "Building Yubi TUI locally using Rust (cargo)..."
         (cd "${SCRIPT_DIR}" && cargo build --release)
         cp "${SCRIPT_DIR}/target/release/${BINARY_NAME}" "${DEST_PATH}"
         DOWNLOAD_SUCCESS=true
     elif command -v cargo >/dev/null 2>&1; then
-        log_info "Cargo detected! Building latest version via cargo install..."
-        cargo install --path "${SCRIPT_DIR}" --root "${HOME}/.local" 2>/dev/null || cargo install --git "https://github.com/${REPO_OWNER}/${REPO_NAME}" --root "${HOME}/.local"
-        DOWNLOAD_SUCCESS=true
+        log_info "Cargo detected! Fetching source tarball and building latest release..."
+        TMP_DIR="$(mktemp -d 2>/dev/null || echo "/tmp/yubi_build")"
+        mkdir -p "${TMP_DIR}"
+        
+        TARBALL_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/main.tar.gz"
+        BUILD_SUCCESS=false
+        
+        if curl -fsSL "${TARBALL_URL}" | tar -xz -C "${TMP_DIR}" 2>/dev/null; then
+            SOURCE_DIR="$(find "${TMP_DIR}" -maxdepth 1 -type d -name "${REPO_NAME}-*" | head -n 1)"
+            if [ -n "${SOURCE_DIR}" ] && [ -f "${SOURCE_DIR}/Cargo.toml" ]; then
+                log_info "Compiling Yubi binary in temporary workspace..."
+                (cd "${SOURCE_DIR}" && cargo build --release)
+                cp "${SOURCE_DIR}/target/release/${BINARY_NAME}" "${DEST_PATH}"
+                BUILD_SUCCESS=true
+                DOWNLOAD_SUCCESS=true
+            fi
+        fi
+        
+        # Cleanup temp directory
+        rm -rf "${TMP_DIR}"
+        
+        if [ "${BUILD_SUCCESS}" = false ]; then
+            log_info "Fallback to cargo install --git..."
+            cargo install --git "https://github.com/${REPO_OWNER}/${REPO_NAME}.git" --root "${HOME}/.local"
+            DOWNLOAD_SUCCESS=true
+        fi
     else
         log_error "Could not download pre-built binary and Rust (cargo) is not installed on this system."
         log_error "Please install Rust (https://rustup.rs) or build Yubi manually."
