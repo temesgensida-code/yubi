@@ -148,16 +148,19 @@ if [ "${PATH_CONFIGURED}" = false ]; then
     
     EXPORT_LINE="export PATH=\"${INSTALL_DIR}:\$PATH\""
     
-    if [ "${SHELL_NAME}" = "zsh" ] && [ -f "${HOME}/.zshrc" ]; then
+    if command -v fish >/dev/null 2>&1; then
+        fish -c "fish_add_path ${INSTALL_DIR}" 2>/dev/null || true
+        FISH_CONFIG="${HOME}/.config/fish/config.fish"
+        if [ -f "${FISH_CONFIG}" ] && ! grep -q "${INSTALL_DIR}" "${FISH_CONFIG}"; then
+            echo "" >> "${FISH_CONFIG}"
+            echo "set -gx PATH ${INSTALL_DIR} \$PATH" >> "${FISH_CONFIG}"
+        fi
+        log_success "Added ${INSTALL_DIR} to Fish path via fish_add_path"
+    elif [ "${SHELL_NAME}" = "zsh" ] && [ -f "${HOME}/.zshrc" ]; then
         echo "" >> "${HOME}/.zshrc"
         echo "# Yubi TUI" >> "${HOME}/.zshrc"
         echo "${EXPORT_LINE}" >> "${HOME}/.zshrc"
         log_success "Updated ~/.zshrc"
-    elif [ "${SHELL_NAME}" = "fish" ]; then
-        FISH_CONFIG="${HOME}/.config/fish/config.fish"
-        mkdir -p "$(dirname "${FISH_CONFIG}")"
-        echo "set -gx PATH ${INSTALL_DIR} \$PATH" >> "${FISH_CONFIG}"
-        log_success "Updated ${FISH_CONFIG}"
     else
         BASH_RC="${HOME}/.bashrc"
         [ -f "${HOME}/.bash_profile" ] && BASH_RC="${HOME}/.bash_profile"
@@ -168,11 +171,22 @@ if [ "${PATH_CONFIGURED}" = false ]; then
     fi
 fi
 
+# Also symlink to ~/.cargo/bin if present in PATH for Rust users
+CARGO_BIN="${HOME}/.cargo/bin"
+if [ -d "${CARGO_BIN}" ]; then
+    ln -sf "${DEST_PATH}" "${CARGO_BIN}/${BINARY_NAME}"
+fi
+
 printf "\n${GREEN}${BOLD}🎉 Installation Complete!${RESET}\n"
-printf "You can now launch the typing trainer anytime by typing:\n"
+printf "You can now launch the typing trainer by typing:\n"
 printf "  ${BOLD}yubi${RESET}\n\n"
 
 if [ "${PATH_CONFIGURED}" = false ]; then
-    printf "${YELLOW}Note: Please restart your terminal or run:${RESET}\n"
-    printf "  ${BOLD}export PATH=\"${INSTALL_DIR}:\$PATH\"${RESET}\n"
+    if [ "${SHELL_NAME}" = "fish" ]; then
+        printf "${YELLOW}To use 'yubi' immediately in this active Fish session, run:${RESET}\n"
+        printf "  ${BOLD}fish_add_path ${INSTALL_DIR}${RESET}\n"
+    else
+        printf "${YELLOW}To use 'yubi' immediately in your current terminal session, run:${RESET}\n"
+        printf "  ${BOLD}export PATH=\"${INSTALL_DIR}:\$PATH\"${RESET}\n"
+    fi
 fi
