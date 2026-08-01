@@ -406,21 +406,98 @@ impl App {
 
     /// Finalizes the current round: computes WPM, snapshots per-finger
     /// accuracy, appends it to history, and persists to disk.
+    /// Finalizes the current round: computes WPM, snapshots per-finger
+    /// accuracy, appends it to history, and persists to disk.
     fn finish_session(&mut self) {
-        let elapsed_minutes = self.session_start.elapsed().as_secs_f64() / 60.0;
+        let elapsed_secs = self.session_start.elapsed().as_secs_f64();
+        let elapsed_minutes = elapsed_secs / 60.0;
         let words_typed = self.target.len() as f64 / 5.0; // standard "word" = 5 chars
         let wpm = if elapsed_minutes > 0.0 {
             words_typed / elapsed_minutes
         } else {
             0.0
         };
-        let errors = self.typed.iter().filter(|t| !t.is_correct()).count() as u64;
+
+        let total_keystrokes = self.typed.len() as u64;
+        let correct_keystrokes = self.typed.iter().filter(|t| t.is_correct()).count() as u64;
+        let errors = total_keystrokes.saturating_sub(correct_keystrokes);
+        let overall_accuracy = if total_keystrokes > 0 {
+            (correct_keystrokes as f64 / total_keystrokes as f64) * 100.0
+        } else {
+            100.0
+        };
 
         self.last_session_wpm = wpm;
         self.last_session_errors = errors;
 
         if self.track_progress == Some(true) {
-            let snapshot = SessionSnapshot::from_engine(&self.engine, wpm);
+            use std::collections::HashMap;
+
+            let mut finger_keystrokes: HashMap<String, u64> = HashMap::new();
+            let mut finger_errors: HashMap<String, u64> = HashMap::new();
+            let mut mistake_counts: HashMap<(char, char), u64> = HashMap::new();
+
+            for t in &self.typed {
+                if let Some(finger) = self.engine.finger_for(t.expected) {
+                    let key = finger.as_key().to_string();
+                    *finger_keystrokes.entry(key.clone()).or_insert(0) += 1;
+                    if !t.is_correct() {
+                        *finger_errors.entry(key.clone()).or_insert(0) += 1;
+                        *mistake_counts.entry((t.expected, t.actual)).or_insert(0) += 1;
+                    }
+                }
+            }
+
+            let mut finger_accuracy: HashMap<String, f64> = HashMap::new();
+            for finger in Finger::ALL {
+                let key = finger.as_key().to_string();
+                let total = *finger_keystrokes.get(&key).unwrap_or(&0);
+                let errs = *finger_errors.get(&key).unwrap_or(&0);
+                let acc = if total > 0 {
+                    ((total - errs) as f64 / total as f64) * 100.0
+                } else {
+                    100.0
+                };
+                finger_accuracy.insert(key, acc);
+            }
+
+            let mut mistake_vec: Vec<((char, char), u64)> = mistake_counts.into_iter().collect();
+            mistake_vec.sort_by(|a, b| b.1.cmp(&a.1));
+            let top_mistakes_str = mistake_vec
+                .into_iter()
+                .take(10)
+                .map(|((exp, act), cnt)| format!("{exp}->{act}:{cnt}"))
+                .collect::<Vec<_>>()
+                .join(";");
+
+            let snapshot = SessionSnapshot {
+                timestamp: persistence::current_unix_timestamp(),
+                wpm,
+                finger_accuracy,
+                session_duration_secs: Some((elapsed_secs * 10.0).round() / 10.0),
+                level: Some(match self.level {
+                    Level::Beginner => "Beginner".to_string(),
+                    Level::Intermediate => "Intermediate".to_string(),
+                    Level::Advanced => "Advanced".to_string(),
+                }),
+                training_mode: Some(match self.training_mode {
+                    TrainingMode::FocusWeakest => "Targeted".to_string(),
+                    TrainingMode::Random => "Random".to_string(),
+                }),
+                round_length: Some(match self.round_length {
+                    RoundLength::Short => "Short".to_string(),
+                    RoundLength::Medium => "Medium".to_string(),
+                    RoundLength::Long => "Long".to_string(),
+                }),
+                overall_accuracy: Some((overall_accuracy * 100.0).round() / 100.0),
+                total_keystrokes: Some(total_keystrokes),
+                correct_keystrokes: Some(correct_keystrokes),
+                error_count: Some(errors),
+                finger_keystrokes,
+                finger_errors,
+                top_mistakes: if top_mistakes_str.is_empty() { None } else { Some(top_mistakes_str) },
+            };
+
             self.history.push(snapshot);
 
             let save_status = match persistence::save_history(&self.history_path, &self.history) {
@@ -446,17 +523,8 @@ impl App {
     }
 
     /// Exports the persisted history to a CSV file (one row per session:
-    /// timestamp, WPM, then one accuracy column per finger). Only available
-    /// when the user opted in to progress tracking, since otherwise
-    /// `history` reflects a previous opt-in period rather than what the
-    /// user asked to be tracked right now.
+    /// human-readable datetime, timestamp, WPM, then one accuracy column per finger).
     pub fn export_history_to_csv(&mut self) {
-        if self.track_progress != Some(true) {
-            self.status_message = Some(
-                "Progress tracking is off, so there's nothing tracked to export.".to_string(),
-            );
-            return;
-        }
         if self.history.sessions.is_empty() {
             self.status_message = Some("No sessions recorded yet — nothing to export.".to_string());
             return;
