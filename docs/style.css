@@ -67,9 +67,10 @@ body {
 }
 
 .logo-icon {
-    width: 2.25rem;
-    height: 2.25rem;
-    color: var(--color-accent);
+    width: 2.4rem;
+    height: 2.4rem;
+    object-fit: contain;
+    border-radius: 6px;
 }
 
 .logo-text h1 {
