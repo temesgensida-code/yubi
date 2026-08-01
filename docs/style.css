@@ -999,6 +999,10 @@ body {
     to { opacity: 1; transform: scale(1); }
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* Documentation & Setup Guide Styling */
 .btn-doc {
     width: 100%;

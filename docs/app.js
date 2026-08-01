@@ -454,34 +454,6 @@ function parseAndLoadCsv(csvText, filename) {
     showDashboard(profileId);
 }
 
-    if (sessions.length === 0) {
-        alert('Could not parse any valid typing session rows.');
-        return;
-    }
-
-    sessions.sort((a, b) => a.timestamp - b.timestamp);
-
-    const firstTimestamp = sessions[0].timestamp;
-    const profileId = `profile_${firstTimestamp}_${sessions.length}`;
-
-    let baseName = filename.replace(/\.[^/.]+$/, "");
-    baseName = baseName.replace(/_export$/, "");
-    baseName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
-
-    const profileName = `${baseName} (${sessions.length} sessions)`;
-
-    state.profiles[profileId] = {
-        id: profileId,
-        name: profileName,
-        sessions: sessions
-    };
-    state.activeProfileId = profileId;
-
-    saveStateToLocalStorage();
-    renderProfileList();
-    showDashboard(profileId);
-}
-
 function parseCsvLine(line) {
     const result = [];
     let insideQuote = false;
