@@ -65,7 +65,7 @@ fi
 DEST_PATH="${INSTALL_DIR}/${BINARY_NAME}"
 
 # 4. Download or Build Binary
-REPO_OWNER="temesgensida"
+REPO_OWNER="temesgensida-code"
 REPO_NAME="yubi"
 RELEASE_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/latest/download/yubi-${TARGET_OS}-${TARGET_ARCH}"
 
