@@ -174,6 +174,40 @@ function setupEventListeners() {
         }
     });
 
+    const clearSessionsBtn = document.getElementById('clear-sessions-btn');
+    if (clearSessionsBtn) {
+        clearSessionsBtn.addEventListener('click', () => {
+            if (!state.activeProfileId) return;
+            const profile = state.profiles[state.activeProfileId];
+            if (confirm(`Are you sure you want to clear all ${profile.sessions.length} recorded session(s) for "${profile.name}"?`)) {
+                profile.sessions = [];
+                saveStateToLocalStorage();
+                renderProfileList();
+                renderDashboardContent(state.activeProfileId);
+                activeProfileSubtitle.textContent = 'Session history cleared (0 sessions recorded)';
+            }
+        });
+    }
+
+    const sampleCsvText = `timestamp,wpm,overall_accuracy,level,training_mode,duration_seconds,finger_accuracy_left_pinky,finger_accuracy_left_ring,finger_accuracy_left_middle,finger_accuracy_left_index,finger_accuracy_left_thumb,finger_accuracy_right_thumb,finger_accuracy_right_index,finger_accuracy_right_middle,finger_accuracy_right_ring,finger_accuracy_right_pinky,finger_keystrokes_left_pinky,finger_keystrokes_left_ring,finger_keystrokes_left_middle,finger_keystrokes_left_index,finger_keystrokes_left_thumb,finger_keystrokes_right_thumb,finger_keystrokes_right_index,finger_keystrokes_right_middle,finger_keystrokes_right_ring,finger_keystrokes_right_pinky,mistake_matrix
+1785614000,48.5,92.4,Beginner,Words,45,88.2,94.1,96.5,91.0,100.0,100.0,90.5,95.0,91.2,85.0,18,22,35,42,0,15,38,29,21,12,"a:s:2|q:w:1|e:r:1|p:o:2"
+1785614300,53.2,94.8,Intermediate,Paragraph,60,91.5,96.0,98.0,94.2,100.0,100.0,93.0,97.1,93.5,88.0,24,28,45,56,0,20,52,36,27,16,"s:a:1|w:e:1|i:o:1|n:m:1"
+1785614600,59.8,96.5,Intermediate,Paragraph,60,94.0,98.2,99.0,96.0,100.0,100.0,95.5,98.5,95.0,91.5,30,32,52,68,0,25,60,42,31,20,"e:r:1|t:y:1|r:e:1"
+1785614900,64.1,97.2,Advanced,Full,75,95.8,99.0,97.5,100.0,100.0,97.0,99.0,96.8,93.2,35,38,60,78,0,30,72,50,38,24,"p:o:1|a:s:1"
+1785615200,68.4,98.6,Advanced,Full,90,97.0,99.5,100.0,98.8,100.0,100.0,98.2,99.5,98.0,95.0,40,42,68,88,0,35,82,58,44,28,"c:v:1"`;
+
+    function loadDemoData() {
+        handleCsvContent(sampleCsvText, 'Demo Profile (Sample Data)');
+    }
+
+    const loadDemoBtn = document.getElementById('load-demo-btn');
+    const emptyDemoBtn = document.getElementById('empty-demo-btn');
+    const emptyBrowseBtn = document.getElementById('empty-browse-btn');
+
+    if (loadDemoBtn) loadDemoBtn.addEventListener('click', loadDemoData);
+    if (emptyDemoBtn) emptyDemoBtn.addEventListener('click', loadDemoData);
+    if (emptyBrowseBtn) emptyBrowseBtn.addEventListener('click', () => fileInput.click());
+
     // Filters
     [filterTime, filterLevel, filterMode].forEach(el => {
         el.addEventListener('change', () => {

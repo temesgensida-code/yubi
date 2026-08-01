@@ -190,6 +190,37 @@ body {
     border-color: var(--color-negative);
 }
 
+.btn-demo {
+    width: 100%;
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(98, 35, 71, 0.6), rgba(18, 46, 52, 0.8));
+    color: var(--color-accent);
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-demo:hover {
+    background: linear-gradient(135deg, rgba(98, 35, 71, 0.9), rgba(18, 46, 52, 0.95));
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px var(--border-glow);
+}
+
+.empty-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
 .btn-icon {
     width: 1rem;
     height: 1rem;

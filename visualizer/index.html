@@ -38,6 +38,12 @@
                     <label for="csv-file-input" class="btn-primary">Browse Files</label>
                     <input type="file" id="csv-file-input" accept=".csv" class="hidden-input">
                 </div>
+                <button class="btn-demo" id="load-demo-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Load Demo Data
+                </button>
             </div>
 
             <!-- User Profiles Switcher -->
@@ -70,6 +76,10 @@
                     </div>
                     <h2>Welcome to Yubi Visualizer</h2>
                     <p>Upload your exported CSV file (`history_export.csv`) to unlock rich performance insights, interactive key mistake heatmaps, and finger load analysis.</p>
+                    <div class="empty-actions">
+                        <button class="btn-primary" id="empty-browse-btn">Browse CSV File</button>
+                        <button class="btn-secondary" id="empty-demo-btn">Load Demo Data</button>
+                    </div>
                 </div>
             </div>
 
@@ -89,12 +99,18 @@
                             </svg>
                             Rename User
                         </button>
+                        <button class="btn-secondary" id="clear-sessions-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Clear Sessions
+                        </button>
                         <button class="btn-danger" id="delete-profile-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                                 <polyline points="3 6 5 6 21 6" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            Delete
+                            Delete Profile
                         </button>
                     </div>
                 </header>
