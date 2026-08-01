@@ -999,14 +999,191 @@ body {
     to { opacity: 1; transform: scale(1); }
 }
 
-.hidden {
-    display: none !important;
+/* Documentation & Setup Guide Styling */
+.btn-doc {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.825rem;
+    font-weight: 600;
+    background: rgba(18, 46, 52, 0.9);
+    color: var(--color-accent);
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    margin-bottom: 0.75rem;
 }
 
-/* Scrollbars */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+.btn-doc:hover {
+    background: rgba(98, 35, 71, 0.4);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px var(--border-glow);
+}
+
+.docs-modal-card {
+    max-width: 680px;
+    width: 90%;
+}
+
+.doc-icon-badge {
+    width: 2.4rem;
+    height: 2.4rem;
+    background: rgba(98, 35, 71, 0.4);
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent);
+}
+
+.doc-icon-badge svg {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.docs-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.doc-step-card {
+    background: rgba(18, 46, 52, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.step-header h4 {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.step-badge {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-plum);
+    color: var(--text-primary);
+    border-radius: 4px;
+}
+
+.step-badge.alt-badge {
+    background: rgba(103, 126, 138, 0.4);
+    color: var(--text-secondary);
+}
+
+.doc-step-card p {
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.code-snippet-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #091418;
+    border: 1px solid rgba(103, 126, 138, 0.3);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    margin-top: 0.25rem;
+    gap: 0.75rem;
+}
+
+.code-snippet-box pre {
+    margin: 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.825rem;
+    color: #e2e8f0;
+}
+
+.code-snippet-box code {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.btn-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(18, 46, 52, 0.9);
+    color: var(--color-accent);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.btn-copy:hover {
+    background: rgba(98, 35, 71, 0.6);
+    border-color: var(--color-accent);
+    color: #ffffff;
+}
+
+.btn-copy.copied {
+    background: rgba(82, 183, 136, 0.25);
+    border-color: var(--color-positive);
+    color: var(--color-positive);
+}
+
+.copy-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+.doc-instructions-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.doc-instructions-list li {
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+kbd {
+    display: inline-block;
+    padding: 0.15rem 0.45rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: rgba(18, 46, 52, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 ::-webkit-scrollbar-track {

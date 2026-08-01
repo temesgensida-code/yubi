@@ -241,6 +241,53 @@ function setupEventListeners() {
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) closeModal();
     });
+
+    // Documentation Modal Handlers
+    const openDocsBtn = document.getElementById('open-docs-btn');
+    const docsModalOverlay = document.getElementById('docs-modal-overlay');
+    const docsCloseBtn = document.getElementById('docs-close-btn');
+
+    if (openDocsBtn && docsModalOverlay) {
+        openDocsBtn.addEventListener('click', () => {
+            docsModalOverlay.classList.remove('hidden');
+        });
+    }
+
+    if (docsCloseBtn && docsModalOverlay) {
+        docsCloseBtn.addEventListener('click', () => {
+            docsModalOverlay.classList.add('hidden');
+        });
+    }
+
+    if (docsModalOverlay) {
+        docsModalOverlay.addEventListener('click', (e) => {
+            if (e.target === docsModalOverlay) {
+                docsModalOverlay.classList.add('hidden');
+            }
+        });
+    }
+
+    // Copy to Clipboard logic for code snippets
+    document.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const codeEl = document.getElementById(targetId);
+            if (codeEl) {
+                const textToCopy = codeEl.textContent.trim();
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const originalHtml = btn.innerHTML;
+                    btn.classList.add('copied');
+                    btn.innerHTML = `✓ Copied!`;
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        btn.innerHTML = originalHtml;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            }
+        });
+    });
 }
 
 function setHeatmapMode(mode) {

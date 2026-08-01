@@ -56,6 +56,13 @@
             </div>
 
             <div class="sidebar-footer">
+                <button class="btn-doc" id="open-docs-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    TUI Setup Guide
+                </button>
                 <p>Yubi Analytics v2.0</p>
             </div>
         </aside>
@@ -428,9 +435,100 @@
                     </div>
                 </div>
             </div>
+    <!-- Documentation & Setup Guide Modal -->
+    <div class="modal-overlay hidden" id="docs-modal-overlay">
+        <div class="modal-card docs-modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div class="doc-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="4 17 10 11 4 5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="12" y1="19" x2="20" y2="19" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>Yubi TUI Installation & Setup Guide</h3>
+                        <span class="modal-subtitle">Quick terminal commands to install, run, and export session data</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="docs-close-btn">&times;</button>
+            </div>
+
+            <div class="modal-body docs-body">
+                <!-- Step 1: One-line Automatic Installation -->
+                <div class="doc-step-card">
+                    <div class="step-header">
+                        <span class="step-badge">Step 1</span>
+                        <h4>Install Yubi TUI (Automated)</h4>
+                    </div>
+                    <p>Run this single command in your Linux or macOS terminal. It automatically detects your OS and CPU architecture and installs the <code>yubi</code> binary globally:</p>
+                    <div class="code-snippet-box">
+                        <pre><code id="cmd-install">curl -fsSL https://raw.githubusercontent.com/temesgensida-code/yubi/main/install.sh | bash</code></pre>
+                        <button class="btn-copy" data-target="cmd-install">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Launch Yubi -->
+                <div class="doc-step-card">
+                    <div class="step-header">
+                        <span class="step-badge">Step 2</span>
+                        <h4>Start the Typing Trainer</h4>
+                    </div>
+                    <p>Once installed, open any terminal window and launch the typing trainer simply by typing:</p>
+                    <div class="code-snippet-box">
+                        <pre><code id="cmd-run">yubi</code></pre>
+                        <button class="btn-copy" data-target="cmd-run">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Alternative Cargo Installation -->
+                <div class="doc-step-card">
+                    <div class="step-header">
+                        <span class="step-badge alt-badge">Alternative</span>
+                        <h4>Build via Rust / Cargo</h4>
+                    </div>
+                    <p>If you have Cargo installed on your system, you can also install directly from source:</p>
+                    <div class="code-snippet-box">
+                        <pre><code id="cmd-cargo">cargo install --git https://github.com/temesgensida-code/yubi</code></pre>
+                        <button class="btn-copy" data-target="cmd-cargo">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Exporting Data -->
+                <div class="doc-step-card">
+                    <div class="step-header">
+                        <span class="step-badge">Step 3</span>
+                        <h4>Export Session CSV for Visualizer</h4>
+                    </div>
+                    <ol class="doc-instructions-list">
+                        <li>Launch <kbd>yubi</kbd> in your terminal.</li>
+                        <li>Press <kbd>Tab</kbd> to switch to the <strong>Progress Dashboard</strong> view.</li>
+                        <li>Press <kbd>e</kbd> to export your practice history to <code>history_export.csv</code>.</li>
+                        <li>Drag & drop your <code>history_export.csv</code> file into this web dashboard!</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
-    
+
     <!-- App Logic Script -->
     <script src="app.js"></script>
 </body>
