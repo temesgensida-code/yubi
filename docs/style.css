@@ -1106,6 +1106,14 @@ body {
     margin: 0;
 }
 
+.doc-sublabel {
+    font-size: 0.775rem;
+    font-weight: 550;
+    color: var(--text-secondary);
+    margin-top: 0.4rem;
+    margin-bottom: -0.1rem;
+}
+
 .code-snippet-box {
     display: flex;
     align-items: center;

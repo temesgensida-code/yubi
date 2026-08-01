@@ -528,6 +528,39 @@
                         <li>Drag & drop your <code>history_export.csv</code> file into this web dashboard!</li>
                     </ol>
                 </div>
+
+                <!-- Step 5: Locating & Accessing Exported CSV -->
+                <div class="doc-step-card">
+                    <div class="step-header">
+                        <span class="step-badge">Location</span>
+                        <h4>Where to Access Your Exported CSV File</h4>
+                    </div>
+                    <p>When you press <kbd>e</kbd> inside <code>yubi</code>, the exported file is created as <code>history_export.csv</code> in the <strong>terminal directory where you ran the <code>yubi</code> command</strong>.</p>
+                    
+                    <div class="doc-sublabel">Copy file to your Downloads folder for easy browser upload:</div>
+                    <div class="code-snippet-box">
+                        <pre><code id="cmd-cp-downloads">cp history_export.csv ~/Downloads/</code></pre>
+                        <button class="btn-copy" data-target="cmd-cp-downloads">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+
+                    <div class="doc-sublabel">Open current folder in your Desktop File Manager:</div>
+                    <div class="code-snippet-box">
+                        <pre><code id="cmd-open-folder">xdg-open . || open .</code></pre>
+                        <button class="btn-copy" data-target="cmd-open-folder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
