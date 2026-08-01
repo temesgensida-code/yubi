@@ -1004,6 +1004,18 @@ body {
     display: none !important;
 }
 
+/* 2-Second Blue Light Emitting Keyframe Animation */
+@keyframes pulse-blue-glow {
+    0%, 100% {
+        box-shadow: 0 0 6px rgba(56, 189, 248, 0.4), 0 0 12px rgba(56, 189, 248, 0.2);
+        border-color: rgba(56, 189, 248, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(56, 189, 248, 0.95), 0 0 40px rgba(56, 189, 248, 0.7), inset 0 0 12px rgba(56, 189, 248, 0.35);
+        border-color: #38bdf8;
+    }
+}
+
 /* Documentation & Setup Guide Styling */
 .btn-doc {
     width: 100%;
@@ -1014,19 +1026,70 @@ body {
     padding: 0.6rem 1rem;
     font-size: 0.825rem;
     font-weight: 600;
-    background: rgba(18, 46, 52, 0.9);
-    color: var(--color-accent);
-    border: 1px solid var(--border-glow);
+    background: rgba(14, 42, 54, 0.95);
+    color: #e0f2fe;
+    border: 1.5px solid #38bdf8;
     border-radius: 8px;
     cursor: pointer;
     transition: var(--transition-fast);
     margin-bottom: 0.75rem;
+    animation: pulse-blue-glow 2s infinite ease-in-out;
 }
 
 .btn-doc:hover {
-    background: rgba(98, 35, 71, 0.4);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 12px var(--border-glow);
+    background: rgba(56, 189, 248, 0.25);
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 1);
+}
+
+/* Light Emitting Note Card */
+.glow-note-card {
+    background: rgba(14, 42, 54, 0.85);
+    border: 1.5px solid #38bdf8;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin: 0.4rem 0 0.6rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.blue-glow-pulse {
+    animation: pulse-blue-glow 2s infinite ease-in-out;
+}
+
+.glow-note-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #38bdf8;
+}
+
+.glow-note-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #38bdf8;
+    flex-shrink: 0;
+}
+
+.glow-note-title {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #38bdf8;
+}
+
+.glow-note-body {
+    font-size: 0.85rem;
+    color: #f0f9ff;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.glow-note-body strong {
+    color: #38bdf8;
+    font-weight: 800;
 }
 
 .docs-modal-card {
