@@ -1,8 +1,12 @@
 [package]
-name = "fingertrack"
+name = "yubi"
 version = "0.1.0"
 edition = "2021"
 description = "A TUI typing trainer that tracks per-finger accuracy over time."
+
+[[bin]]
+name = "yubi"
+path = "src/main.rs"
 
 [dependencies]
 ratatui = "0.29"
