@@ -77,12 +77,21 @@ fn centered_rect(percent_x: u16, height: u16, area: Rect) -> Rect {
     horizontal[1]
 }
 
+const YUBI_ASCII_LOGO: &[&str] = &[
+    "██╗   ██╗██╗   ██╗██████╗ ██╗",
+    "╚██╗ ██╔╝██║   ██║██╔══██╗██║",
+    " ╚████╔╝ ██║   ██║██████╔╝██║",
+    "  ╚██╔╝  ██║   ██║██╔══██╗██║",
+    "   ██║   ╚██████╔╝██████╔╝██║",
+    "   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝",
+];
+
 fn draw_header(frame: &mut Frame, area: Rect, app: &App) {
     let title = match app.mode {
-        Mode::Consent => "FingerTrack — Welcome",
-        Mode::Setup => "FingerTrack — Setup",
-        Mode::Typing => "FingerTrack — Practice Round",
-        Mode::Dashboard => "FingerTrack — Progress Dashboard",
+        Mode::Consent => "Yubi — Welcome",
+        Mode::Setup => "Yubi — Setup",
+        Mode::Typing => "Yubi — Practice Round",
+        Mode::Dashboard => "Yubi — Progress Dashboard",
     };
     let subtitle = match app.mode {
         Mode::Consent => "y: yes, save my progress   n: no, don't save   Esc: quit".to_string(),
@@ -118,7 +127,22 @@ fn draw_footer(frame: &mut Frame, area: Rect, app: &App) {
 // ---------------------------------------------------------------------
 
 fn draw_consent(frame: &mut Frame, area: Rect) {
-    let block_area = centered_rect(70, 11, area);
+    let main_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(7),
+            Constraint::Min(11),
+        ])
+        .split(area);
+
+    let logo_text: Vec<Line> = YUBI_ASCII_LOGO
+        .iter()
+        .map(|line| Line::from(Span::styled(*line, Style::default().fg(THEME.brand).add_modifier(Modifier::BOLD))))
+        .collect();
+    let logo_para = Paragraph::new(logo_text).alignment(Alignment::Center);
+    frame.render_widget(logo_para, main_layout[0]);
+
+    let block_area = centered_rect(70, 11, main_layout[1]);
     let text = vec![
         Line::from("Track your progress across sessions?"),
         Line::from(""),
@@ -148,7 +172,22 @@ fn draw_consent(frame: &mut Frame, area: Rect) {
 // ---------------------------------------------------------------------
 
 fn draw_setup(frame: &mut Frame, area: Rect, app: &App) {
-    let block_area = centered_rect(60, 12, area);
+    let main_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(7),
+            Constraint::Min(12),
+        ])
+        .split(area);
+
+    let logo_text: Vec<Line> = YUBI_ASCII_LOGO
+        .iter()
+        .map(|line| Line::from(Span::styled(*line, Style::default().fg(THEME.brand).add_modifier(Modifier::BOLD))))
+        .collect();
+    let logo_para = Paragraph::new(logo_text).alignment(Alignment::Center);
+    frame.render_widget(logo_para, main_layout[0]);
+
+    let block_area = centered_rect(60, 12, main_layout[1]);
     let rows = Layout::default()
         .direction(Direction::Vertical)
         .constraints([

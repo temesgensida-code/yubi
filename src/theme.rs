@@ -21,6 +21,7 @@ pub struct Theme {
     pub accent: Color,
     pub warning: Color,
     pub muted: Color,
+    pub brand: Color,
 }
 
 pub const THEME: Theme = Theme {
@@ -37,6 +38,7 @@ pub const THEME: Theme = Theme {
     accent: Color::Cyan,
     warning: Color::LightRed,
     muted: Color::DarkGray,
+    brand: Color::Rgb(98, 35, 71), // #622347 Deep Plum Accent
 };
 
 /// A `Block` with rounded borders and a title, styled from [`THEME`].
