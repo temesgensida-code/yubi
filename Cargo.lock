@@ -208,19 +208,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
 
 [[package]]
-name = "fingertrack"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "crossterm",
- "dirs",
- "rand",
- "ratatui",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1086,6 +1073,19 @@ name = "windows_x86_64_msvc"
 version = "0.52.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
+
+[[package]]
+name = "yubi"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "crossterm",
+ "dirs",
+ "rand",
+ "ratatui",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "zerocopy"
