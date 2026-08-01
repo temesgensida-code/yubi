@@ -504,24 +504,111 @@ fn draw_tabs(frame: &mut Frame, area: Rect, app: &App) {
     frame.render_widget(tabs, area);
 }
 
-/// Line chart of historical accuracy for the selected finger, drawn with
-/// Braille markers so the trend looks smooth even in a small pane.
+/// Generates a dense, smooth continuous curve from discrete `(x, y)` points.
+/// Uses smooth cosine sub-sampling so Ratatui's Braille canvas displays a seamless, connected curve.
+fn generate_smooth_curve(points: &[(f64, f64)], num_samples: usize) -> Vec<(f64, f64)> {
+    if points.is_empty() {
+        return Vec::new();
+    }
+    if points.len() == 1 {
+        return vec![points[0]];
+    }
+
+    let min_x = points[0].0;
+    let max_x = points[points.len() - 1].0;
+    let total_span = max_x - min_x;
+
+    if total_span <= f64::EPSILON {
+        return points.to_vec();
+    }
+
+    let n = num_samples.max(points.len() * 4).min(200);
+    let mut curve = Vec::with_capacity(n);
+
+    for i in 0..n {
+        let t = i as f64 / (n - 1) as f64;
+        let target_x = min_x + t * total_span;
+
+        let mut idx = 0;
+        while idx < points.len() - 1 && points[idx + 1].0 < target_x {
+            idx += 1;
+        }
+
+        if idx >= points.len() - 1 {
+            curve.push((target_x, points[points.len() - 1].1));
+            continue;
+        }
+
+        let p0 = points[idx];
+        let p1 = points[idx + 1];
+        let dx = p1.0 - p0.0;
+
+        let interpolated_y = if dx <= f64::EPSILON {
+            p0.1
+        } else {
+            let local_t = (target_x - p0.0) / dx;
+            // Cosine interpolation for smooth S-curve transitions
+            let mu2 = (1.0 - (local_t * std::f64::consts::PI).cos()) / 2.0;
+            p0.1 * (1.0 - mu2) + p1.1 * mu2
+        };
+
+        curve.push((target_x, interpolated_y));
+    }
+
+    curve
+}
+
+/// Continuous, aesthetic line chart of historical accuracy for the selected finger.
 fn draw_accuracy_chart(frame: &mut Frame, area: Rect, app: &App) {
     let finger = app.selected_finger();
     let series = app.history.accuracy_series(finger.as_key());
-    let title = format!("{finger} \u{2014} Accuracy Trend");
-
+    
     if series.len() < 2 {
+        let title = format!("{finger} \u{2014} Accuracy Trend");
         render_needs_more_data(frame, area, &title, app.history.sessions.is_empty());
         return;
     }
 
+    let sum_acc: f64 = series.iter().map(|(_, y)| *y).sum();
+    let avg_acc = sum_acc / series.len() as f64;
+    let latest_acc = series.last().map(|(_, y)| *y).unwrap_or(0.0);
+    let peak_acc = series.iter().map(|(_, y)| *y).fold(0.0_f64, f64::max);
+    let min_acc = series.iter().map(|(_, y)| *y).fold(100.0_f64, f64::min);
+
+    let title = format!(
+        "{finger} \u{2014} Accuracy Trend  \u{2022} Avg: {avg_acc:.1}% \u{2022} Peak: {peak_acc:.1}% \u{2022} Latest: {latest_acc:.1}%"
+    );
+
     let max_x = (series.len() as f64 - 1.0).max(1.0);
-    let dataset = Dataset::default()
-        .name(finger.to_string())
+    let smooth_series = generate_smooth_curve(&series, 80);
+
+    // Dynamic Y bounds so details are clearly visible
+    let min_y = (min_acc - 5.0).max(40.0).floor();
+    let max_y = 100.5;
+
+    // Reference target guide line at 90%
+    let target_90_data = vec![(0.0, 90.0), (max_x, 90.0)];
+    let target_line = Dataset::default()
+        .name("Target (90%)")
+        .marker(symbols::Marker::Braille)
+        .graph_type(GraphType::Line)
+        .style(Style::default().fg(THEME.muted))
+        .data(&target_90_data);
+
+    // Continuous smooth accuracy curve
+    let smooth_line = Dataset::default()
+        .name("Continuous Trend")
         .marker(symbols::Marker::Braille)
         .graph_type(GraphType::Line)
         .style(Style::default().fg(THEME.accent))
+        .data(&smooth_series);
+
+    // Session markers overlay
+    let session_dots = Dataset::default()
+        .name("Sessions")
+        .marker(symbols::Marker::Dot)
+        .graph_type(GraphType::Scatter)
+        .style(Style::default().fg(THEME.brand))
         .data(&series);
 
     let x_labels = vec![
@@ -529,9 +616,13 @@ fn draw_accuracy_chart(frame: &mut Frame, area: Rect, app: &App) {
         Span::raw(format!("{:.0}", max_x / 2.0)),
         Span::raw(format!("{max_x:.0}")),
     ];
-    let y_labels = vec![Span::raw("50%"), Span::raw("75%"), Span::raw("100%")];
+    let y_labels = vec![
+        Span::raw(format!("{min_y:.0}%")),
+        Span::raw(format!("{:.0}%", (min_y + 100.0) / 2.0)),
+        Span::raw("100%"),
+    ];
 
-    let chart = Chart::new(vec![dataset])
+    let chart = Chart::new(vec![target_line, smooth_line, session_dots])
         .block(theme::block(title))
         .x_axis(
             Axis::default()
@@ -544,37 +635,48 @@ fn draw_accuracy_chart(frame: &mut Frame, area: Rect, app: &App) {
             Axis::default()
                 .title("Accuracy")
                 .style(Style::default().fg(THEME.muted))
-                .bounds([50.0, 100.0])
+                .bounds([min_y, max_y])
                 .labels(y_labels),
         );
 
     frame.render_widget(chart, area);
 }
 
-/// Line chart of WPM across every recorded session (not per-finger - WPM
-/// is a whole-round metric).
+/// Continuous, aesthetic line chart of WPM across every recorded session.
 fn draw_wpm_chart(frame: &mut Frame, area: Rect, app: &App) {
     let series = app.history.wpm_series();
-    let title = "Words Per Minute \u{2014} Trend".to_string();
 
     if series.len() < 2 {
+        let title = "Words Per Minute \u{2014} Trend".to_string();
         render_needs_more_data(frame, area, &title, app.history.sessions.is_empty());
         return;
     }
 
-    let max_x = (series.len() as f64 - 1.0).max(1.0);
-    let max_y = series
-        .iter()
-        .map(|(_, y)| *y)
-        .fold(0.0_f64, f64::max)
-        .max(20.0)
-        * 1.2;
+    let sum_wpm: f64 = series.iter().map(|(_, y)| *y).sum();
+    let avg_wpm = sum_wpm / series.len() as f64;
+    let latest_wpm = series.last().map(|(_, y)| *y).unwrap_or(0.0);
+    let peak_wpm = series.iter().map(|(_, y)| *y).fold(0.0_f64, f64::max);
 
-    let dataset = Dataset::default()
-        .name("WPM")
+    let title = format!(
+        "Words Per Minute \u{2014} Trend  \u{2022} Avg: {avg_wpm:.1} WPM \u{2022} Peak: {peak_wpm:.1} WPM \u{2022} Latest: {latest_wpm:.1} WPM"
+    );
+
+    let max_x = (series.len() as f64 - 1.0).max(1.0);
+    let max_y = (peak_wpm * 1.15).max(30.0);
+    let smooth_series = generate_smooth_curve(&series, 80);
+
+    let smooth_line = Dataset::default()
+        .name("Smooth WPM")
         .marker(symbols::Marker::Braille)
         .graph_type(GraphType::Line)
         .style(Style::default().fg(THEME.correct))
+        .data(&smooth_series);
+
+    let session_dots = Dataset::default()
+        .name("Sessions")
+        .marker(symbols::Marker::Dot)
+        .graph_type(GraphType::Scatter)
+        .style(Style::default().fg(THEME.accent))
         .data(&series);
 
     let x_labels = vec![
@@ -588,7 +690,7 @@ fn draw_wpm_chart(frame: &mut Frame, area: Rect, app: &App) {
         Span::raw(format!("{max_y:.0}")),
     ];
 
-    let chart = Chart::new(vec![dataset])
+    let chart = Chart::new(vec![smooth_line, session_dots])
         .block(theme::block(title))
         .x_axis(
             Axis::default()
