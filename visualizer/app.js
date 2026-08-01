@@ -471,8 +471,8 @@ function renderCharts(sessions) {
                 {
                     label: 'Speed (WPM)',
                     data: wpmData,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                    borderColor: '#E0B4B2',
+                    backgroundColor: 'rgba(224, 180, 178, 0.12)',
                     borderWidth: 2.5,
                     fill: true,
                     tension: 0.35,
@@ -481,7 +481,7 @@ function renderCharts(sessions) {
                 {
                     label: 'Accuracy (%)',
                     data: accData,
-                    borderColor: '#10b981',
+                    borderColor: '#52B788',
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     borderDash: [4, 4],
@@ -494,7 +494,7 @@ function renderCharts(sessions) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: true, labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
+                legend: { display: true, labels: { color: '#ABAFB5', font: { family: 'Inter', size: 11 } } },
                 tooltip: {
                     callbacks: {
                         title: (items) => dateLabels[items[0].dataIndex],
@@ -503,9 +503,9 @@ function renderCharts(sessions) {
                 }
             },
             scales: {
-                x: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8' } },
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'WPM', color: '#3b82f6' }, grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8' } },
-                y1: { type: 'linear', display: true, position: 'right', min: 40, max: 100, title: { display: true, text: 'Accuracy %', color: '#10b981' }, grid: { drawOnChartArea: false }, ticks: { color: '#94a3b8' } }
+                x: { grid: { color: 'rgba(103, 126, 138, 0.15)' }, ticks: { color: '#ABAFB5' } },
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'WPM', color: '#E0B4B2' }, grid: { color: 'rgba(103, 126, 138, 0.15)' }, ticks: { color: '#ABAFB5' } },
+                y1: { type: 'linear', display: true, position: 'right', min: 40, max: 100, title: { display: true, text: 'Accuracy %', color: '#52B788' }, grid: { drawOnChartArea: false }, ticks: { color: '#ABAFB5' } }
             }
         }
     });
@@ -538,19 +538,19 @@ function renderCharts(sessions) {
         data: {
             labels: fingerLabels,
             datasets: [
-                { label: 'Keystrokes', data: strokesData, backgroundColor: 'rgba(59, 130, 246, 0.6)', borderRadius: 4 },
-                { label: 'Errors', data: errorsData, backgroundColor: 'rgba(239, 68, 68, 0.7)', borderRadius: 4 }
+                { label: 'Keystrokes', data: strokesData, backgroundColor: 'rgba(98, 35, 71, 0.75)', borderRadius: 4 },
+                { label: 'Errors', data: errorsData, backgroundColor: 'rgba(224, 90, 101, 0.8)', borderRadius: 4 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: true, labels: { color: '#94a3b8', font: { family: 'Inter', size: 10 } } }
+                legend: { display: true, labels: { color: '#ABAFB5', font: { family: 'Inter', size: 10 } } }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } },
-                y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8' } }
+                x: { grid: { display: false }, ticks: { color: '#ABAFB5', font: { size: 9 } } },
+                y: { grid: { color: 'rgba(103, 126, 138, 0.15)' }, ticks: { color: '#ABAFB5' } }
             }
         }
     });
@@ -576,8 +576,8 @@ function renderCharts(sessions) {
             datasets: [{
                 label: 'Avg WPM',
                 data: levelAvgs,
-                backgroundColor: ['rgba(16, 185, 129, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(245, 158, 11, 0.5)'],
-                borderColor: ['#10b981', '#3b82f6', '#f59e0b'],
+                backgroundColor: ['rgba(82, 183, 136, 0.5)', 'rgba(98, 35, 71, 0.65)', 'rgba(224, 180, 178, 0.65)'],
+                borderColor: ['#52B788', '#622347', '#E0B4B2'],
                 borderWidth: 1.5,
                 borderRadius: 6
             }]
