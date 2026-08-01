@@ -271,15 +271,21 @@ function handleCsvFile(file) {
     reader.readAsText(file);
 }
 
-// Simple Parser for CSV
+// Optimized Parser for CSV
 function parseAndLoadCsv(csvText, filename) {
-    const lines = csvText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    const rawLines = csvText.split(/\r?\n/);
+    const lines = [];
+    for (let i = 0; i < rawLines.length; i++) {
+        const trimmed = rawLines[i].trim();
+        if (trimmed.length > 0) lines.push(trimmed);
+    }
+    
     if (lines.length < 2) {
         alert('CSV file is empty or corrupted.');
         return;
     }
 
-    const header = lines[0].split(',');
+    const header = parseCsvLine(lines[0]);
     
     // Validate required headers
     if (!header.includes('timestamp') || !header.includes('wpm')) {
@@ -287,11 +293,52 @@ function parseAndLoadCsv(csvText, filename) {
         return;
     }
 
-    const sessions = [];
     const fingerKeys = [
         'left_pinky', 'left_ring', 'left_middle', 'left_index', 'left_thumb',
         'right_thumb', 'right_index', 'right_middle', 'right_ring', 'right_pinky'
     ];
+
+    // Pre-build index-to-handler map ONCE for header columns
+    const columnHandlers = header.map(rawCol => {
+        const colName = rawCol.trim();
+        if (colName === 'date_time') return (session, val) => session.date_time = val;
+        if (colName === 'timestamp') return (session, val) => {
+            session.timestamp = parseInt(val, 10) || 0;
+            if (!session.date_time && session.timestamp > 0) {
+                session.date_time = new Date(session.timestamp * 1000).toLocaleString();
+            }
+        };
+        if (colName === 'session_duration_secs') return (session, val) => session.session_duration_secs = parseFloat(val) || null;
+        if (colName === 'level') return (session, val) => session.level = val || 'Beginner';
+        if (colName === 'training_mode') return (session, val) => session.training_mode = val || 'Random';
+        if (colName === 'round_length') return (session, val) => session.round_length = val || 'Medium';
+        if (colName === 'wpm') return (session, val) => session.wpm = parseFloat(val) || 0.0;
+        if (colName === 'overall_accuracy') return (session, val) => session.overall_accuracy = val === '' ? null : parseFloat(val);
+        if (colName === 'total_keystrokes') return (session, val) => session.total_keystrokes = val === '' ? null : parseInt(val, 10);
+        if (colName === 'correct_keystrokes') return (session, val) => session.correct_keystrokes = val === '' ? null : parseInt(val, 10);
+        if (colName === 'error_count') return (session, val) => session.error_count = val === '' ? null : parseInt(val, 10);
+        if (colName === 'top_mistakes' || colName === 'mistake_matrix') return (session, val) => session.top_mistakes = val;
+
+        if (fingerKeys.includes(colName)) {
+            return (session, val) => session.finger_accuracies[colName] = val === '' ? null : parseFloat(val);
+        }
+        for (let i = 0; i < fingerKeys.length; i++) {
+            const f = fingerKeys[i];
+            if (colName === `${f}_count` || colName === `finger_keystrokes_${f}`) {
+                return (session, val) => session.finger_keystrokes[f] = val === '' ? null : parseInt(val, 10);
+            }
+            if (colName === `${f}_errors` || colName === `finger_errors_${f}`) {
+                return (session, val) => session.finger_errors[f] = val === '' ? null : parseInt(val, 10);
+            }
+            if (colName === `finger_accuracy_${f}`) {
+                return (session, val) => session.finger_accuracies[f] = val === '' ? null : parseFloat(val);
+            }
+        }
+        return null;
+    });
+
+    const sessions = new Array(lines.length - 1);
+    let validCount = 0;
 
     for (let i = 1; i < lines.length; i++) {
         const fields = parseCsvLine(lines[i]);
@@ -315,46 +362,50 @@ function parseAndLoadCsv(csvText, filename) {
             top_mistakes: ''
         };
 
-        header.forEach((colName, colIdx) => {
-            const val = fields[colIdx];
-            if (colName === 'date_time') session.date_time = val;
-            else if (colName === 'timestamp') {
-                session.timestamp = parseInt(val, 10);
-                if (!session.date_time) {
-                    session.date_time = new Date(session.timestamp * 1000).toLocaleString();
-                }
-            } else if (colName === 'session_duration_secs') session.session_duration_secs = parseFloat(val) || null;
-            else if (colName === 'level') session.level = val || 'Beginner';
-            else if (colName === 'training_mode') session.training_mode = val || 'Random';
-            else if (colName === 'round_length') session.round_length = val || 'Medium';
-            else if (colName === 'wpm') session.wpm = parseFloat(val) || 0.0;
-            else if (colName === 'overall_accuracy') session.overall_accuracy = val === '' ? null : parseFloat(val);
-            else if (colName === 'total_keystrokes') session.total_keystrokes = val === '' ? null : parseInt(val, 10);
-            else if (colName === 'correct_keystrokes') session.correct_keystrokes = val === '' ? null : parseInt(val, 10);
-            else if (colName === 'error_count') session.error_count = val === '' ? null : parseInt(val, 10);
-            else if (colName === 'top_mistakes') session.top_mistakes = val;
-            else if (fingerKeys.includes(colName)) {
-                session.finger_accuracies[colName] = val === '' ? null : parseFloat(val);
-            } else {
-                // Check for finger_count and finger_errors
-                fingerKeys.forEach(f => {
-                    if (colName === `${f}_count`) session.finger_keystrokes[f] = val === '' ? null : parseInt(val, 10);
-                    if (colName === `${f}_errors`) session.finger_errors[f] = val === '' ? null : parseInt(val, 10);
-                });
-            }
-        });
+        for (let j = 0; j < columnHandlers.length; j++) {
+            const handler = columnHandlers[j];
+            if (handler) handler(session, fields[j]);
+        }
 
-        // Compute overall accuracy if missing
         if (session.overall_accuracy === null) {
             let sumAcc = 0, countAcc = 0;
-            Object.values(session.finger_accuracies).forEach(acc => {
-                if (acc !== null) { sumAcc += acc; countAcc++; }
-            });
+            const accs = Object.values(session.finger_accuracies);
+            for (let k = 0; k < accs.length; k++) {
+                if (accs[k] !== null) { sumAcc += accs[k]; countAcc++; }
+            }
             session.overall_accuracy = countAcc > 0 ? sumAcc / countAcc : 100.0;
         }
 
-        sessions.push(session);
+        sessions[validCount++] = session;
     }
+
+    sessions.length = validCount;
+
+    if (sessions.length === 0) {
+        alert('Could not parse any valid typing session rows.');
+        return;
+    }
+
+    sessions.sort((a, b) => a.timestamp - b.timestamp);
+
+    const firstTimestamp = sessions[0].timestamp;
+    const profileId = `profile_${firstTimestamp}_${sessions.length}`;
+
+    let baseName = filename.replace(/\.[^/.]+$/, "");
+    baseName = baseName.replace(/_export$/, "");
+    const profileName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+
+    state.profiles[profileId] = {
+        id: profileId,
+        name: profileName,
+        sessions: sessions
+    };
+    state.activeProfileId = profileId;
+
+    saveStateToLocalStorage();
+    renderProfileList();
+    showDashboard(profileId);
+}
 
     if (sessions.length === 0) {
         alert('Could not parse any valid typing session rows.');
@@ -527,6 +578,7 @@ function renderCharts(sessions) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 150 },
             plugins: {
                 legend: { display: true, labels: { color: '#ABAFB5', font: { family: 'Inter', size: 11 } } },
                 tooltip: {
@@ -579,6 +631,7 @@ function renderCharts(sessions) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 150 },
             plugins: {
                 legend: { display: true, labels: { color: '#ABAFB5', font: { family: 'Inter', size: 10 } } }
             },
@@ -619,6 +672,7 @@ function renderCharts(sessions) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 150 },
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
