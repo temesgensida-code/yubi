@@ -16,6 +16,31 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <!-- Mobile Screen Restriction Notice -->
+    <div class="mobile-unavailable-container" id="mobile-unavailable">
+        <div class="mobile-unavailable-card">
+            <div class="mobile-icon-ring animate-pulse">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="9" y1="6" x2="15" y2="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="3" y1="3" x2="21" y2="21" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="mobile-unavailable-badge">Desktop Only</div>
+            <h2>Service Unavailable on Mobile</h2>
+            <p class="mobile-message">since the service is type testing it is anvailable for mobile</p>
+            <div class="mobile-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hint-icon">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <span>Please access Yubi Analytics on a desktop or laptop computer with a large screen.</span>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">

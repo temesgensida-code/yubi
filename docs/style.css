@@ -1275,7 +1275,11 @@ kbd {
     background: var(--text-muted);
 }
 
-/* Responsive Scaling */
+/* Responsive Scaling & Mobile Restriction */
+.mobile-unavailable-container {
+    display: none;
+}
+
 @media (max-width: 1400px) {
     .charts-row {
         grid-template-columns: 1fr;
@@ -1283,10 +1287,113 @@ kbd {
 }
 
 @media (max-width: 1024px) {
-    .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
+    .app-container,
+    .modal-overlay {
+        display: none !important;
     }
-    .sidebar {
-        width: 260px;
+
+    .mobile-unavailable-container {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--bg-app);
+        background-image: 
+            radial-gradient(circle at 50% 30%, rgba(98, 35, 71, 0.35) 0%, transparent 70%),
+            radial-gradient(circle at 80% 80%, rgba(18, 46, 52, 0.6) 0%, transparent 50%);
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        z-index: 99999;
+        text-align: center;
+    }
+
+    .mobile-unavailable-card {
+        max-width: 440px;
+        width: 100%;
+        background: rgba(18, 46, 52, 0.85);
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(98, 35, 71, 0.2);
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .mobile-icon-ring {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 50%;
+        background: rgba(224, 90, 101, 0.15);
+        border: 1.5px solid rgba(224, 90, 101, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-negative);
+    }
+
+    .mobile-icon-ring svg {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .mobile-unavailable-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.725rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: rgba(98, 35, 71, 0.5);
+        color: var(--color-accent);
+        border-radius: 20px;
+        border: 1px solid var(--border-glow);
+    }
+
+    .mobile-unavailable-card h2 {
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+    }
+
+    .mobile-message {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        line-height: 1.5;
+        font-weight: 500;
+        background: rgba(14, 29, 33, 0.6);
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        border: 1px dashed var(--border-color);
+    }
+
+    .mobile-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-align: left;
+        line-height: 1.4;
+        background: rgba(14, 42, 54, 0.5);
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(103, 126, 138, 0.2);
+    }
+
+    .hint-icon {
+        width: 1.4rem;
+        height: 1.4rem;
+        color: var(--color-accent);
+        flex-shrink: 0;
     }
 }
