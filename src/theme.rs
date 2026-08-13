@@ -38,16 +38,16 @@ pub const THEME: Theme = Theme {
     accent: Color::Cyan,
     warning: Color::LightRed,
     muted: Color::DarkGray,
-    brand: Color::Rgb(98, 35, 71), // #622347 Deep Plum Accent
+    brand: Color::Rgb(48, 57, 53), // #303935 Dark Charcoal Button Accent
 };
 
-/// A `Block` with rounded borders and a title, styled from [`THEME`].
+/// A `Block` with sharp plain borders and a title, styled from [`THEME`].
 /// The single helper every panel in `ui.rs` should go through, so border
 /// style/type stays consistent everywhere.
 pub fn block(title: impl Into<String>) -> Block<'static> {
     Block::default()
         .borders(Borders::ALL)
-        .border_type(BorderType::Rounded)
+        .border_type(BorderType::Plain)
         .border_style(Style::default().fg(THEME.border))
         .title(title.into())
 }
@@ -57,7 +57,7 @@ pub fn block(title: impl Into<String>) -> Block<'static> {
 pub fn block_focused(title: impl Into<String>) -> Block<'static> {
     Block::default()
         .borders(Borders::ALL)
-        .border_type(BorderType::Rounded)
+        .border_type(BorderType::Plain)
         .border_style(Style::default().fg(THEME.border_focused))
         .title(title.into())
 }

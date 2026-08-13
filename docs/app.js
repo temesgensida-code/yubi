@@ -575,8 +575,8 @@ function renderCharts(sessions) {
                 {
                     label: 'Speed (WPM)',
                     data: wpmData,
-                    borderColor: '#E0B4B2',
-                    backgroundColor: 'rgba(224, 180, 178, 0.12)',
+                    borderColor: '#ffffff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
                     borderWidth: 2.5,
                     fill: true,
                     tension: 0.35,
@@ -585,7 +585,7 @@ function renderCharts(sessions) {
                 {
                     label: 'Accuracy (%)',
                     data: accData,
-                    borderColor: '#52B788',
+                    borderColor: '#4ade80',
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     borderDash: [4, 4],
@@ -599,7 +599,7 @@ function renderCharts(sessions) {
             maintainAspectRatio: false,
             animation: { duration: 150 },
             plugins: {
-                legend: { display: true, labels: { color: '#ABAFB5', font: { family: 'Inter', size: 11 } } },
+                legend: { display: true, labels: { color: '#ffffff', font: { family: 'Inter', size: 11, weight: 'bold' } } },
                 tooltip: {
                     callbacks: {
                         title: (items) => dateLabels[items[0].dataIndex],
@@ -608,9 +608,9 @@ function renderCharts(sessions) {
                 }
             },
             scales: {
-                x: { grid: { color: 'rgba(103, 126, 138, 0.15)' }, ticks: { color: '#ABAFB5' } },
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'WPM', color: '#E0B4B2' }, grid: { color: 'rgba(103, 126, 138, 0.15)' }, ticks: { color: '#ABAFB5' } },
-                y1: { type: 'linear', display: true, position: 'right', min: 40, max: 100, title: { display: true, text: 'Accuracy %', color: '#52B788' }, grid: { drawOnChartArea: false }, ticks: { color: '#ABAFB5' } }
+                x: { grid: { color: 'rgba(255, 255, 255, 0.15)' }, ticks: { color: '#d4e2dc' } },
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'WPM', color: '#ffffff' }, grid: { color: 'rgba(255, 255, 255, 0.15)' }, ticks: { color: '#d4e2dc' } },
+                y1: { type: 'linear', display: true, position: 'right', min: 40, max: 100, title: { display: true, text: 'Accuracy %', color: '#4ade80' }, grid: { drawOnChartArea: false }, ticks: { color: '#4ade80' } }
             }
         }
     });
@@ -643,8 +643,8 @@ function renderCharts(sessions) {
         data: {
             labels: fingerLabels,
             datasets: [
-                { label: 'Keystrokes', data: strokesData, backgroundColor: 'rgba(98, 35, 71, 0.75)', borderRadius: 4 },
-                { label: 'Errors', data: errorsData, backgroundColor: 'rgba(224, 90, 101, 0.8)', borderRadius: 4 }
+                { label: 'Keystrokes', data: strokesData, backgroundColor: '#303935', borderColor: '#ffffff', borderWidth: 1, borderRadius: 0 },
+                { label: 'Errors', data: errorsData, backgroundColor: '#ef4444', borderColor: '#ffffff', borderWidth: 1, borderRadius: 0 }
             ]
         },
         options: {
@@ -652,11 +652,11 @@ function renderCharts(sessions) {
             maintainAspectRatio: false,
             animation: { duration: 150 },
             plugins: {
-                legend: { display: true, labels: { color: '#ABAFB5', font: { family: 'Inter', size: 10 } } }
+                legend: { display: true, labels: { color: '#ffffff', font: { family: 'Inter', size: 10, weight: 'bold' } } }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#ABAFB5', font: { size: 9 } } },
-                y: { grid: { color: 'rgba(103, 126, 138, 0.15)' }, ticks: { color: '#ABAFB5' } }
+                x: { grid: { display: false }, ticks: { color: '#d4e2dc', font: { size: 9 } } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.15)' }, ticks: { color: '#d4e2dc' } }
             }
         }
     });
@@ -682,10 +682,10 @@ function renderCharts(sessions) {
             datasets: [{
                 label: 'Avg WPM',
                 data: levelAvgs,
-                backgroundColor: ['rgba(82, 183, 136, 0.5)', 'rgba(98, 35, 71, 0.65)', 'rgba(224, 180, 178, 0.65)'],
-                borderColor: ['#52B788', '#622347', '#E0B4B2'],
+                backgroundColor: ['#303935', '#434f49', '#9eb8ae'],
+                borderColor: '#ffffff',
                 borderWidth: 1.5,
-                borderRadius: 6
+                borderRadius: 0
             }]
         },
         options: {
@@ -694,8 +694,8 @@ function renderCharts(sessions) {
             animation: { duration: 150 },
             plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8' } }
+                x: { grid: { display: false }, ticks: { color: '#ffffff' } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.15)' }, ticks: { color: '#ffffff' } }
             }
         }
     });
