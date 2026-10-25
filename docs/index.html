@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yubi — Biomechanical Touch-Typing Trainer & Sensory Biofeedback Engine</title>
+  <meta name="description" content="A modern, high-performance terminal touch-typing trainer built with 100% Rust and Ratatui. Features ghost pacer, real-time sensory biofeedback, IKI hesitation tracking, and a native 5-tab TUI dashboard." />
+  <link rel="icon" type="image/svg+xml" href="_.svg" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Yubi — Biomechanical Touch-Typing Trainer" />
+  <meta property="og:description" content="100% Rust & Ratatui terminal typing trainer with real-time sensory biofeedback, ghost pacer, and native analytics." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yubi.temesgen.works" />
+  <meta property="og:image" content="https://yubi.temesgen.works/yubi-tui.gif" />
+</head>
+<body>
+
+  <!-- ================= Sticky Header ================= -->
+  <header class="header">
+    <div class="container nav-wrap">
+      <a href="#" class="brand-link">
+        <img src="_.svg" alt="Yubi Logo" class="brand-logo" />
+        <span class="brand-title">Yubi</span>
+        <span class="brand-badge">v0.1.0</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#acceleration">Speed</a></li>
+          <li><a href="#biofeedback">Biofeedback</a></li>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="#drills">Drills</a></li>
+          <li><a href="#keybindings">Keybindings</a></li>
+          <li><a href="#installation">Install</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/temesgensida-code/yubi" target="_blank" rel="noopener" class="btn-github">
+          <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Hero Section ================= -->
+  <section class="hero" id="overview">
+    <div class="container">
+      <div class="hero-pill">
+        <span>⚡ Pure Rust &amp; Ratatui • Sub-Millisecond Native TUI</span>
+      </div>
+
+      <h1 class="hero-title">
+        Biomechanical Touch-Typing Trainer &amp;<br />
+        <span class="gradient-text">Sensory Biofeedback Engine</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Eliminate cognitive hesitations, track microsecond keystroke latencies, and achieve effortless typing flow with live in-terminal sensory diagnostics. 100% offline, zero web overhead.
+      </p>
+
+      <!-- Install One-Liner -->
+      <div class="install-banner">
+        <div class="install-command">
+          <span class="prompt-symbol">$</span><span id="install-cmd">curl -fsSL https://raw.githubusercontent.com/temesgensida-code/yubi/main/install.sh | bash</span>
+        </div>
+        <button class="copy-btn" id="copy-btn" onclick="copyInstallCmd()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span id="copy-text">Copy</span>
+        </button>
+      </div>
+
+      <!-- Highlights Pills -->
+      <div class="badges-grid">
+        <div class="stat-pill"><strong>Ghost Pacer</strong> &amp; Real-Time Delta</div>
+        <div class="stat-pill"><strong>Inter-Key Interval</strong> (IKI) Latency</div>
+        <div class="stat-pill"><strong>Live Keyboard</strong> &amp; Thermal Error Glow</div>
+        <div class="stat-pill"><strong>Rhythm Consistency</strong> Metronome</div>
+        <div class="stat-pill"><strong>5-Tab Dashboard</strong> with Braille Curves</div>
+        <div class="stat-pill"><strong>Multi-Layout</strong> QWERTY / Colemak / Dvorak</div>
+      </div>
+
+      <!-- Terminal Mockup with GIF Demo -->
+      <div class="terminal-window">
+        <div class="terminal-titlebar">
+          <div class="terminal-controls">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">yubi — ratatui practice session</span>
+          <div style="width: 52px;"></div>
+        </div>
+        <div class="terminal-body">
+          <img src="yubi-tui.gif" alt="Yubi Terminal UI Demonstration" class="terminal-media" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 1. Speed Acceleration ================= -->
+  <section class="section" id="acceleration">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Biomechanical Acceleration</span>
+        <h2 class="section-title">Break Through Neuromuscular Speed Ceilings</h2>
+        <p class="section-desc">Designed based on motor learning biomechanics to turn sluggish conscious finger reaches into instinctive reflex arcs.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="card-icon">🚀</div>
+          <h3 class="card-title">Ghost Pacer &amp; Real-Time Delta</h3>
+          <p class="card-desc">Visual velocity cursor gliding through text at personal-best or target WPM, paired with a live lead/lag delta badge.</p>
+          <ul class="card-bullets">
+            <li>Fixed targets: 40, 60, 80, 100, 120, 140 WPM or dynamic Personal Best</li>
+            <li>Instant real-time pace feedback (e.g. <span style="color:var(--brand-emerald)">▲ +6.4 WPM</span> / <span style="color:var(--brand-rose)">▼ -3.2 WPM</span>)</li>
+            <li>Smooth character gliding synchronized with precision timers</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">⚡</div>
+          <h3 class="card-title">Burst &amp; Timed Sprint Engine</h3>
+          <p class="card-desc">Short, explosive rounds that stretch neurological processing speeds before fatigue degradation occurs.</p>
+          <ul class="card-bullets">
+            <li>5-word micro-bursts for maximum neuromuscular output</li>
+            <li>15s, 30s, and 60s timed countdown sprints</li>
+            <li>Infinite streaming text replenishment as you near the end of lines</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">⏱️</div>
+          <h3 class="card-title">Inter-Key Interval (IKI) Tracking</h3>
+          <p class="card-desc">Measures microsecond latency between consecutive keystrokes (T<sub>latency</sub> = t<sub>n</sub> - t<sub>n-1</sub>) to isolate awkward transitions.</p>
+          <ul class="card-bullets">
+            <li>Classifies transitions: Alternating Hands, Same-Hand Rolls, Same-Finger Leaps</li>
+            <li>Tracks specific weak finger pairs (e.g. Left Ring → Left Pinky)</li>
+            <li>Logs median &amp; average transition speeds across all completed rounds</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2. Live Sensory Biofeedback ================= -->
+  <section class="section" id="biofeedback">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Real-Time Biofeedback</span>
+        <h2 class="section-title">Sensory Biofeedback in Every Keystroke</h2>
+        <p class="section-desc">Immediate visual and rhythmic cues train your brain to eliminate hesitation pauses and maintain relaxed cadence.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="card-icon">⌨️</div>
+          <h3 class="card-title">Live On-Screen Keyboard</h3>
+          <p class="card-desc">Real-time virtual keyboard matching your layout with active next-key highlighting and tactile home-row anchor points.</p>
+          <ul class="card-bullets">
+            <li>Visual opposite-hand Shift chording indicators</li>
+            <li>Home-row anchor points underlined on <kbd>F</kbd> and <kbd>J</kbd> (or layout equivalents)</li>
+            <li>Compact view for small terminal windows and full matrix for large screens</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">🔥</div>
+          <h3 class="card-title">Dynamic Thermal Error Glow</h3>
+          <p class="card-desc">Keys heat up upon mistyping and gradually cool down as accurate typing resumes, creating instant peripheral visual awareness.</p>
+          <ul class="card-bullets">
+            <li>Exponential decay cooling algorithm (λ = 0.15 s<sup>-1</sup>)</li>
+            <li>Multi-tier glow states: Warm → Heated → Critical Error Red</li>
+            <li>Pinpoints chronic physical reach mistakes instantly</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">🎵</div>
+          <h3 class="card-title">Cadence &amp; Rhythm Metronome</h3>
+          <p class="card-desc">Live consistency gauge measuring rolling keystroke intervals and coefficient of variation to foster flow-state typing.</p>
+          <ul class="card-bullets">
+            <li>Real-time state classification: <span style="color:var(--brand-emerald)">Flow State</span>, <span style="color:var(--brand-amber)">Staccato</span>, or <span style="color:var(--brand-rose)">Erratic</span></li>
+            <li>Visual consistency gauge bar with color-graded feedback</li>
+            <li>Encourages smooth, uniform pacing over jerky hesitation bursts</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. Native Dashboard ================= -->
+  <section class="section" id="dashboard">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">In-Terminal Analytics</span>
+        <h2 class="section-title">Native 5-Tab TUI Diagnostics Suite</h2>
+        <p class="section-desc">No external websites, no CSV exports, no cloud sync. All charts, curves, and heatmaps render natively inside your terminal.</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <span class="dash-tab-num">[1] Trends &amp; Progression</span>
+          <h3 class="dash-title">Continuous Braille Curves</h3>
+          <p class="dash-desc">High-resolution terminal graphs charting historical WPM and accuracy progression with a 90% benchmark target guide.</p>
+        </div>
+
+        <div class="dash-card">
+          <span class="dash-tab-num">[2] Keyboard Heatmap</span>
+          <h3 class="dash-title">Interactive Key Inspector</h3>
+          <p class="dash-desc">Arrow-navigable on-screen matrix with 3 metric modes: Finger Accuracy %, Key Error Count, and Keystroke Load Share.</p>
+        </div>
+
+        <div class="dash-card">
+          <span class="dash-tab-num">[3] Finger Load Balance</span>
+          <h3 class="dash-title">Biomechanical Radar</h3>
+          <p class="dash-desc">Comparative horizontal bars analyzing workload share %, latency index, and precision across all 10 fingers with Left vs. Right hand symmetry evaluation.</p>
+        </div>
+
+        <div class="dash-card">
+          <span class="dash-tab-num">[4] Level Comparison</span>
+          <h3 class="dash-title">Performance Matrices</h3>
+          <p class="dash-desc">Detailed comparative breakdown across difficulty tiers (Beginner, Intermediate, Advanced) and practice modes.</p>
+        </div>
+
+        <div class="dash-card">
+          <span class="dash-tab-num">[5] Session History Log</span>
+          <h3 class="dash-title">Paginated Historical Log</h3>
+          <p class="dash-desc">Scrollable table detailing date, duration, speed, accuracy, total strokes, errors, average IKI, and rhythm consistency.</p>
+        </div>
+
+        <div class="dash-card">
+          <span class="dash-tab-num">[f] Slicing Filter Engine</span>
+          <h3 class="dash-title">Real-Time Data Slicing</h3>
+          <p class="dash-desc">Instant dynamic filtering by Time (<kbd>t</kbd>: All, 7 Days, 30 Days), Difficulty (<kbd>l</kbd>), and Training Mode (<kbd>m</kbd>).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. Training Drills & Content ================= -->
+  <section class="section" id="drills">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Adaptive Content</span>
+        <h2 class="section-title">Specialized Drills &amp; Custom Content</h2>
+        <p class="section-desc">Target programming syntax and stubborn bigram hesitation bottlenecks with automated progressive drills.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="card-icon">🪜</div>
+          <h3 class="card-title">Bigram Hesitation Ladder</h3>
+          <p class="card-desc">Automatically identifies your slowest bigram transitions from recent rounds and generates targeted 3-tier drills.</p>
+          <ul class="card-bullets">
+            <li><strong>Tier 1 Isolation</strong>: <code>qu qu qui que squ qua qu</code></li>
+            <li><strong>Tier 2 Words</strong>: <code>quick queen equal square liquid</code></li>
+            <li><strong>Tier 3 Sentences</strong>: <code>The quick queen required quiet squares.</code></li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">💻</div>
+          <h3 class="card-title">Developer Syntax / Code Mode</h3>
+          <p class="card-desc">Curated real-world programming exercises to build muscle memory for developer symbols and keywords.</p>
+          <ul class="card-bullets">
+            <li><strong>Rust Idioms</strong>: Generics, lifetimes, pattern matches, and standard traits</li>
+            <li><strong>TypeScript &amp; Python</strong>: Async/await, dataclasses, arrow functions</li>
+            <li><strong>Synthetic Symbol Sprints</strong>: Brackets (<code>{}</code>, <code>[]</code>), operators (<code>=&gt;</code>, <code>-&gt;</code>, <code>::</code>, <code>!=</code>, <code>&amp;&amp;</code>)</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">📝</div>
+          <h3 class="card-title">Configurable Paragraph Lengths</h3>
+          <p class="card-desc">Choose whole-word practice lengths from 5 up to 60 words, backed by a rich multi-sentence paragraph bank.</p>
+          <ul class="card-bullets">
+            <li>Progressive ladder: 5w (Burst), 10w, 15w, 20w, 30w, 40w, 50w, 60w (Full)</li>
+            <li>Intelligent multi-sentence chaining with natural terminal punctuation</li>
+            <li>Viewport-responsive vertical scrolling keeping active words centered</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. Keybindings Reference ================= -->
+  <section class="section" id="keybindings">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Controls &amp; Ergonomics</span>
+        <h2 class="section-title">Keyboard Shortcuts Reference</h2>
+        <p class="section-desc">Fast, frictionless terminal navigation without touching your mouse.</p>
+      </div>
+
+      <div class="key-tables-grid">
+        <!-- Setup Screen -->
+        <div class="key-card">
+          <h3 class="key-card-title">
+            <span>⚙️</span> Setup Screen
+          </h3>
+          <table class="key-table">
+            <tr>
+              <td><kbd>↑</kbd> <kbd>↓</kbd> / <kbd>Tab</kbd></td>
+              <td>Switch settings field (Level, Mode, Length, Layout, Thumb, Pacer)</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd></td>
+              <td>Cycle setting values</td>
+            </tr>
+            <tr>
+              <td><kbd>Enter</kbd></td>
+              <td>Launch typing practice round</td>
+            </tr>
+            <tr>
+              <td><kbd>F2</kbd></td>
+              <td>Cycle color theme</td>
+            </tr>
+            <tr>
+              <td><kbd>Esc</kbd></td>
+              <td>Quit Yubi</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Practice Round -->
+        <div class="key-card">
+          <h3 class="key-card-title">
+            <span>⚡</span> Practice Round (Typing)
+          </h3>
+          <table class="key-table">
+            <tr>
+              <td><kbd>Printable Chars</kbd></td>
+              <td>Type expected character</td>
+            </tr>
+            <tr>
+              <td><kbd>Backspace</kbd></td>
+              <td>Correct last mistyped character</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl+W</kbd> / <kbd>Ctrl+⌫</kbd></td>
+              <td>Fast delete previous word</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl+R</kbd></td>
+              <td>Instant round restart with fresh text</td>
+            </tr>
+            <tr>
+              <td><kbd>F2</kbd></td>
+              <td>Cycle color theme on the fly</td>
+            </tr>
+            <tr>
+              <td><kbd>Esc</kbd></td>
+              <td>Cancel round &amp; return to Setup</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Debrief Replay -->
+        <div class="key-card">
+          <h3 class="key-card-title">
+            <span>🔍</span> Instant Replay Debrief
+          </h3>
+          <table class="key-table">
+            <tr>
+              <td><kbd>r</kbd></td>
+              <td>Retry same text immediately to reinforce motor memory</td>
+            </tr>
+            <tr>
+              <td><kbd>w</kbd></td>
+              <td>Launch drill targeting your weakest finger</td>
+            </tr>
+            <tr>
+              <td><kbd>Enter</kbd></td>
+              <td>Next round with current settings</td>
+            </tr>
+            <tr>
+              <td><kbd>Tab</kbd></td>
+              <td>Open native TUI Dashboard</td>
+            </tr>
+            <tr>
+              <td><kbd>Esc</kbd></td>
+              <td>Return to Setup screen</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="key-card">
+          <h3 class="key-card-title">
+            <span>📊</span> Performance Dashboard
+          </h3>
+          <table class="key-table">
+            <tr>
+              <td><kbd>1</kbd> – <kbd>5</kbd></td>
+              <td>Switch directly to Tab 1–5</td>
+            </tr>
+            <tr>
+              <td><kbd>Tab</kbd> / <kbd>⇧ Tab</kbd></td>
+              <td>Cycle next / previous dashboard tab</td>
+            </tr>
+            <tr>
+              <td><kbd>t</kbd></td>
+              <td>Cycle Time Filter (All Time → 7 Days → 30 Days)</td>
+            </tr>
+            <tr>
+              <td><kbd>l</kbd> / <kbd>m</kbd></td>
+              <td>Cycle Difficulty Level &amp; Mode Filters</td>
+            </tr>
+            <tr>
+              <td><kbd>h</kbd></td>
+              <td>Cycle Heatmap Mode (Accuracy → Errors → Load)</td>
+            </tr>
+            <tr>
+              <td><kbd>↑</kbd> <kbd>↓</kbd> / <kbd>PgUp</kbd> <kbd>PgDn</kbd></td>
+              <td>Scroll session history log</td>
+            </tr>
+            <tr>
+              <td><kbd>r</kbd> / <kbd>Esc</kbd></td>
+              <td>Return to Setup / Quit Dashboard</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 6. Installation & Quickstart ================= -->
+  <section class="section" id="installation">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Get Started</span>
+        <h2 class="section-title">Installation &amp; Setup</h2>
+        <p class="section-desc">Run Yubi in seconds on any Linux, macOS, or WSL terminal.</p>
+      </div>
+
+      <div class="install-tabs">
+        <div class="install-tab-header">
+          <button class="tab-btn active" onclick="switchInstallTab('curl')">Single-Run Script</button>
+          <button class="tab-btn" onclick="switchInstallTab('source')">Build from Source</button>
+          <button class="tab-btn" onclick="switchInstallTab('cargo')">Cargo Install</button>
+        </div>
+
+        <div class="install-tab-content">
+          <!-- Curl Tab -->
+          <div id="tab-curl" class="tab-pane">
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:8px;">Download, verify, and run Yubi with a single command:</p>
+            <div class="code-box">
+              <pre><code>curl -fsSL https://raw.githubusercontent.com/temesgensida-code/yubi/main/install.sh | bash</code></pre>
+              <button class="copy-icon-btn" onclick="copySnippet(this, 'curl -fsSL https://raw.githubusercontent.com/temesgensida-code/yubi/main/install.sh | bash')">Copy</button>
+            </div>
+          </div>
+
+          <!-- Source Tab -->
+          <div id="tab-source" class="tab-pane" style="display:none;">
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:8px;">Clone and compile from the Git repository (Rust 1.75+ required):</p>
+            <div class="code-box">
+              <pre><code>git clone https://github.com/temesgensida-code/yubi.git
+cd yubi
+cargo run --release</code></pre>
+              <button class="copy-icon-btn" onclick="copySnippet(this, 'git clone https://github.com/temesgensida-code/yubi.git &amp;&amp; cd yubi &amp;&amp; cargo run --release')">Copy</button>
+            </div>
+          </div>
+
+          <!-- Cargo Tab -->
+          <div id="tab-cargo" class="tab-pane" style="display:none;">
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:8px;">Install binary directly into your cargo bin path:</p>
+            <div class="code-box">
+              <pre><code>git clone https://github.com/temesgensida-code/yubi.git
+cd yubi
+cargo install --path .</code></pre>
+              <button class="copy-icon-btn" onclick="copySnippet(this, 'git clone https://github.com/temesgensida-code/yubi.git &amp;&amp; cd yubi &amp;&amp; cargo install --path .')">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Footer ================= -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="_.svg" alt="Yubi Logo" style="width:24px; height:24px;" />
+        <span style="font-weight:700; color:var(--text-main); font-family:var(--font-mono);">Yubi</span>
+        <span>— Biomechanical Terminal Touch-Typing Trainer</span>
+      </div>
+
+      <div class="footer-links">
+        <a href="https://github.com/temesgensida-code/yubi" target="_blank" rel="noopener">GitHub Repository</a>
+        <span>•</span>
+        <a href="https://github.com/temesgensida-code/yubi/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+        <span>•</span>
+        <a href="https://temesgen.works" target="_blank" rel="noopener">temesgen.works</a>
+      </div>
+
+      <p style="font-size:0.82rem; color:var(--text-subtle);">
+        Built with 100% Rust &amp; Ratatui. Pure local execution, zero web dependencies.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ================= Interactive Scripts ================= -->
+  <script>
+    function copyInstallCmd() {
+      const text = document.getElementById('install-cmd').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.getElementById('copy-btn');
+        const copyText = document.getElementById('copy-text');
+        copyBtn.classList.add('copied');
+        copyText.innerText = 'Copied!';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyText.innerText = 'Copy';
+        }, 2000);
+      });
+    }
+
+    function copySnippet(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.style.color = '#34d399';
+        btn.style.borderColor = '#34d399';
+        setTimeout(() => {
+          btn.innerText = original;
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2000);
+      });
+    }
+
+    function switchInstallTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+
+      if (tab === 'curl') {
+        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('tab-curl').style.display = 'block';
+      } else if (tab === 'source') {
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('tab-source').style.display = 'block';
+      } else if (tab === 'cargo') {
+        document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+        document.getElementById('tab-cargo').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
