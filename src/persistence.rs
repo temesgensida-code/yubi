@@ -1,6 +1,5 @@
 //! Local JSON persistence for cross-session progress tracking.
 
-use chrono::TimeZone;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -9,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::app::{Level, RoundLength, TrainingMode};
-use crate::finger::{Finger, TypingEngine};
+use crate::finger::TypingEngine;
 
 /// One completed practice session, frozen at the moment it ended.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,11 +56,18 @@ pub struct SessionSnapshot {
     /// Top mistyped character pairs formatted as "expected->actual:count;..."
     #[serde(default)]
     pub top_mistakes: Option<String>,
+    /// Average Inter-Key Interval in milliseconds for this session.
+    #[serde(default)]
+    pub avg_iki_ms: Option<f64>,
+    /// Rhythm consistency percentage (0-100) based on rolling IKI variation.
+    #[serde(default)]
+    pub consistency_pct: Option<f64>,
 }
 
 impl SessionSnapshot {
     /// Builds a snapshot from the engine's current in-memory stats, stamped
     /// with the current wall-clock time.
+    #[allow(dead_code)]
     pub fn from_engine(engine: &TypingEngine, wpm: f64) -> Self {
         SessionSnapshot {
             timestamp: current_unix_timestamp(),
@@ -78,6 +84,8 @@ impl SessionSnapshot {
             finger_keystrokes: HashMap::new(),
             finger_errors: HashMap::new(),
             top_mistakes: None,
+            avg_iki_ms: None,
+            consistency_pct: None,
         }
     }
 }
@@ -105,6 +113,7 @@ impl UserHistory {
     /// Extracts the accuracy time series for one finger across all
     /// recorded sessions, as `(session_index, accuracy_pct)` pairs suitable
     /// for feeding straight into a ratatui `Dataset`.
+    #[allow(dead_code)]
     pub fn accuracy_series(&self, finger_key: &str) -> Vec<(f64, f64)> {
         self.sessions
             .iter()
@@ -119,6 +128,7 @@ impl UserHistory {
 
     /// WPM across every recorded session, as `(session_index, wpm)` pairs
     /// for the dashboard's "WPM trend" tab.
+    #[allow(dead_code)]
     pub fn wpm_series(&self) -> Vec<(f64, f64)> {
         self.sessions
             .iter()
@@ -135,6 +145,7 @@ impl UserHistory {
     /// Counts consecutive most-recent sessions (walking backward from the
     /// latest) whose average accuracy across all fingers is at least
     /// `threshold_pct`. Stops at the first session that falls short.
+    #[allow(dead_code)]
     pub fn current_streak(&self, threshold_pct: f64) -> usize {
         let mut streak = 0;
         for session in self.sessions.iter().rev() {
@@ -166,6 +177,14 @@ pub struct AppSettings {
     /// `None` until the user has answered the one-time tracking-consent
     /// prompt; see `app::Mode::Consent`.
     pub track_progress: Option<bool>,
+    #[serde(default)]
+    pub theme_id: Option<crate::theme::ThemeId>,
+    #[serde(default)]
+    pub thumb_preference: Option<crate::finger::ThumbPreference>,
+    #[serde(default)]
+    pub layout: Option<crate::finger::KeyboardLayout>,
+    #[serde(default)]
+    pub pacer_mode: Option<crate::engine::pacer::PacerMode>,
 }
 
 impl Default for AppSettings {
@@ -173,8 +192,12 @@ impl Default for AppSettings {
         AppSettings {
             level: Level::Beginner,
             training_mode: TrainingMode::FocusWeakest,
-            round_length: RoundLength::Medium,
+            round_length: RoundLength::Words30,
             track_progress: None,
+            theme_id: None,
+            thumb_preference: None,
+            layout: None,
+            pacer_mode: None,
         }
     }
 }
@@ -223,100 +246,6 @@ pub fn save_settings(path: &Path, settings: &AppSettings) -> io::Result<()> {
     Ok(())
 }
 
-/// Default on-disk location for a CSV export: alongside `history.json`, at
-/// `<config_dir>/fingertrack/history_export.csv`. Re-exporting overwrites
-/// the previous export rather than accumulating timestamped files, since
-/// it's always a full dump of current history rather than an incremental
-/// log.
-pub fn default_csv_export_path() -> PathBuf {
-    PathBuf::from("./history_export.csv")
-}
-
-/// Writes `history` out as CSV: one header row, then one row per session
-/// with its human-readable date/time, timestamp, WPM, and one accuracy column
-/// per finger (0-100, blank if that finger had no recorded keystrokes that session).
-/// This is a one-way export for sharing/analysis outside the app - there's no
-/// matching `import_history_csv`, since `history.json` remains the
-/// authoritative source the app itself reads and writes.
-pub fn export_history_csv(history: &UserHistory, path: &Path) -> io::Result<()> {
-    if let Some(parent) = path.parent() {
-        if !parent.as_os_str().is_empty() {
-            fs::create_dir_all(parent)?;
-        }
-    }
-
-    let mut out = String::new();
-    let mut header: Vec<String> = vec![
-        "date_time".to_string(),
-        "timestamp".to_string(),
-        "session_duration_secs".to_string(),
-        "level".to_string(),
-        "training_mode".to_string(),
-        "round_length".to_string(),
-        "wpm".to_string(),
-        "overall_accuracy".to_string(),
-        "total_keystrokes".to_string(),
-        "correct_keystrokes".to_string(),
-        "error_count".to_string(),
-    ];
-
-    for finger in Finger::ALL {
-        let key = finger.as_key();
-        header.push(key.to_string());
-        header.push(format!("{key}_count"));
-        header.push(format!("{key}_errors"));
-    }
-    header.push("top_mistakes".to_string());
-
-    out.push_str(&header.join(","));
-    out.push('\n');
-
-    for session in &history.sessions {
-        let date_time = match chrono::Local.timestamp_opt(session.timestamp as i64, 0) {
-            chrono::LocalResult::Single(dt) => dt.format("%Y-%m-%d %H:%M:%S").to_string(),
-            chrono::LocalResult::Ambiguous(dt, _) => dt.format("%Y-%m-%d %H:%M:%S").to_string(),
-            chrono::LocalResult::None => "unknown".to_string(),
-        };
-
-        let mut fields: Vec<String> = vec![
-            date_time,
-            session.timestamp.to_string(),
-            session.session_duration_secs.map_or(String::new(), |v| format!("{:.1}", v)),
-            session.level.clone().unwrap_or_default(),
-            session.training_mode.clone().unwrap_or_default(),
-            session.round_length.clone().unwrap_or_default(),
-            format!("{:.2}", session.wpm),
-            session.overall_accuracy.map_or(String::new(), |v| format!("{:.2}", v)),
-            session.total_keystrokes.map_or(String::new(), |v| v.to_string()),
-            session.correct_keystrokes.map_or(String::new(), |v| v.to_string()),
-            session.error_count.map_or(String::new(), |v| v.to_string()),
-        ];
-
-        for finger in Finger::ALL {
-            let key = finger.as_key();
-            match session.finger_accuracy.get(key) {
-                Some(acc) => fields.push(format!("{acc:.2}")),
-                None => fields.push(String::new()),
-            }
-            match session.finger_keystrokes.get(key) {
-                Some(cnt) => fields.push(cnt.to_string()),
-                None => fields.push(String::new()),
-            }
-            match session.finger_errors.get(key) {
-                Some(errs) => fields.push(errs.to_string()),
-                None => fields.push(String::new()),
-            }
-        }
-
-        fields.push(session.top_mistakes.clone().unwrap_or_default());
-
-        out.push_str(&fields.join(","));
-        out.push('\n');
-    }
-
-    fs::write(path, out)
-}
-
 /// Default on-disk location: `<config_dir>/fingertrack/history.json`, e.g.
 /// `~/.config/fingertrack/history.json` on Linux. Falls back to
 /// `./history.json` in the current directory if the OS config dir can't be
@@ -360,4 +289,57 @@ pub fn save_history(path: &Path, history: &UserHistory) -> io::Result<()> {
     fs::write(&tmp_path, json)?;
     fs::rename(&tmp_path, path)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_app_settings_round_length_serde() {
+        let settings = AppSettings {
+            round_length: RoundLength::Words60,
+            ..Default::default()
+        };
+
+        let json = serde_json::to_string(&settings).unwrap();
+        assert!(json.contains("\"round_length\":\"Words60\""));
+
+        let deserialized: AppSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.round_length, RoundLength::Words60);
+    }
+
+    #[test]
+    fn test_legacy_round_length_aliases() {
+        let legacy_json = r#"{
+            "level": "Beginner",
+            "training_mode": "FocusWeakest",
+            "round_length": "Short"
+        }"#;
+        let settings: AppSettings = serde_json::from_str(legacy_json).unwrap();
+        assert_eq!(settings.round_length, RoundLength::Words15);
+
+        let legacy_med = r#"{
+            "level": "Beginner",
+            "training_mode": "FocusWeakest",
+            "round_length": "Medium"
+        }"#;
+        let s2: AppSettings = serde_json::from_str(legacy_med).unwrap();
+        assert_eq!(s2.round_length, RoundLength::Words30);
+
+        let legacy_long = r#"{
+            "level": "Beginner",
+            "training_mode": "FocusWeakest",
+            "round_length": "Long"
+        }"#;
+        let s3: AppSettings = serde_json::from_str(legacy_long).unwrap();
+        assert_eq!(s3.round_length, RoundLength::Words50);
+
+        let rl_short: RoundLength = serde_json::from_str("\"Short\"").unwrap();
+        assert_eq!(rl_short, RoundLength::Words15);
+        let rl_med: RoundLength = serde_json::from_str("\"Medium\"").unwrap();
+        assert_eq!(rl_med, RoundLength::Words30);
+        let rl_long: RoundLength = serde_json::from_str("\"Long\"").unwrap();
+        assert_eq!(rl_long, RoundLength::Words50);
+    }
 }

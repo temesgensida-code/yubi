@@ -6,8 +6,7 @@
 //! - `generator`   : weak-finger-targeted word drills (used at Beginner level)
 //! - `paragraphs`  : finger-tagged paragraph bank (Intermediate/Advanced levels)
 //! - `persistence` : JSON load/save of cross-session history + app settings
-//! - `app`         : application state machine (Consent / Setup / Typing /
-//!                   Dashboard)
+//! - `app`         : application state machine (Consent / Setup / Typing / Dashboard)
 //! - `theme`       : centralized color palette + shared widget helpers
 //! - `ui`          : pure rendering functions (ratatui widgets)
 //!
@@ -15,6 +14,8 @@
 //! non-blocking input -> update -> draw loop.
 
 mod app;
+mod drills;
+mod engine;
 mod finger;
 mod generator;
 mod paragraphs;
@@ -27,15 +28,15 @@ use std::time::Duration;
 
 use crossterm::{
     event::{
-        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton,
-        MouseEvent, MouseEventKind,
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyEventKind,
+        KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
     },
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-use app::{App, Mode};
+use app::{App, DashboardTab, Mode};
 
 /// How long each poll waits for an input event before giving up control and
 /// looping back to redraw. Keeps the UI responsive (redraws ~10x/sec even
@@ -93,7 +94,7 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, mut app: App) 
                     if key.kind != KeyEventKind::Press {
                         continue;
                     }
-                    handle_key(&mut app, key.code);
+                    handle_key(&mut app, key);
                 }
                 Event::Mouse(mouse) => handle_mouse(&mut app, mouse),
                 Event::Resize(_, _) => {
@@ -124,15 +125,19 @@ fn handle_mouse(app: &mut App, mouse: MouseEvent) {
     }
 }
 
-fn handle_key(app: &mut App, code: KeyCode) {
+fn handle_key(app: &mut App, key: KeyEvent) {
+    if key.code == KeyCode::F(2) {
+        app.cycle_theme();
+        return;
+    }
     match app.mode {
-        Mode::Consent => match code {
+        Mode::Consent => match key.code {
             KeyCode::Esc => app.should_quit = true,
             KeyCode::Char('y') | KeyCode::Char('Y') => app.set_tracking_consent(true),
             KeyCode::Char('n') | KeyCode::Char('N') => app.set_tracking_consent(false),
             _ => {}
         },
-        Mode::Setup => match code {
+        Mode::Setup => match key.code {
             KeyCode::Esc => app.should_quit = true,
             KeyCode::Up | KeyCode::Down | KeyCode::Tab => app.setup_toggle_focus(),
             KeyCode::Left => app.setup_cycle_left(),
@@ -140,20 +145,118 @@ fn handle_key(app: &mut App, code: KeyCode) {
             KeyCode::Enter => app.start_new_round(),
             _ => {}
         },
-        Mode::Typing => match code {
-            KeyCode::Esc => app.should_quit = true,
-            KeyCode::Backspace => app.handle_backspace(),
-            KeyCode::Char(c) => {
-                app.handle_char_input(c);
+        Mode::Typing => {
+            if key.modifiers.contains(KeyModifiers::CONTROL) {
+                match key.code {
+                    KeyCode::Char('w') | KeyCode::Backspace => {
+                        app.handle_delete_word();
+                        return;
+                    }
+                    KeyCode::Char('r') => {
+                        app.restart_current_round();
+                        return;
+                    }
+                    _ => {}
+                }
             }
+            match key.code {
+                KeyCode::Esc => app.should_quit = true,
+                KeyCode::Backspace => app.handle_backspace(),
+                KeyCode::Char(c) => {
+                    app.handle_char_input(c);
+                }
+                _ => {}
+            }
+        }
+        Mode::Debrief => match key.code {
+            KeyCode::Char('r') => {
+                app.restart_current_round();
+                app.mode = Mode::Typing;
+            }
+            KeyCode::Char('w') => {
+                app.training_mode = crate::app::TrainingMode::FocusWeakest;
+                app.start_new_round();
+            }
+            KeyCode::Enter => {
+                app.start_new_round();
+            }
+            KeyCode::Tab => {
+                app.mode = Mode::Dashboard;
+            }
+            KeyCode::Esc => {
+                app.mode = Mode::Setup;
+            }
+            KeyCode::Char('q') => app.should_quit = true,
             _ => {}
         },
-        Mode::Dashboard => match code {
+        Mode::Dashboard => match key.code {
             KeyCode::Esc | KeyCode::Char('q') => app.should_quit = true,
-            KeyCode::Up => app.select_prev_finger(),
-            KeyCode::Down => app.select_next_finger(),
+            KeyCode::Char('1') => app.set_dashboard_tab(DashboardTab::Trends),
+            KeyCode::Char('2') => app.set_dashboard_tab(DashboardTab::KeyboardHeatmap),
+            KeyCode::Char('3') => app.set_dashboard_tab(DashboardTab::FingerLoad),
+            KeyCode::Char('4') => app.set_dashboard_tab(DashboardTab::LevelComparison),
+            KeyCode::Char('5') => app.set_dashboard_tab(DashboardTab::SessionHistory),
             KeyCode::Tab => app.cycle_dashboard_tab(),
-            KeyCode::Char('e') => app.export_history_to_csv(),
+            KeyCode::BackTab => app.prev_dashboard_tab(),
+            KeyCode::Char('t') | KeyCode::Char('T') => app.cycle_time_filter(),
+            KeyCode::Char('l') | KeyCode::Char('L') => app.cycle_level_filter(),
+            KeyCode::Char('m') | KeyCode::Char('M') => {
+                if app.dashboard_tab == DashboardTab::KeyboardHeatmap {
+                    app.cycle_heatmap_mode();
+                } else {
+                    app.cycle_mode_filter();
+                }
+            }
+            KeyCode::Char('h') | KeyCode::Char('H') => app.cycle_heatmap_mode(),
+            KeyCode::Char('f') | KeyCode::Char('F') => app.cycle_time_filter(),
+            KeyCode::Up => match app.dashboard_tab {
+                DashboardTab::KeyboardHeatmap => app.move_heatmap_selection(-1, 0),
+                DashboardTab::SessionHistory => {
+                    let count = app.filtered_sessions().len();
+                    app.history_prev(count);
+                }
+                _ => app.select_prev_finger(),
+            },
+            KeyCode::Down => match app.dashboard_tab {
+                DashboardTab::KeyboardHeatmap => app.move_heatmap_selection(1, 0),
+                DashboardTab::SessionHistory => {
+                    let count = app.filtered_sessions().len();
+                    app.history_next(count);
+                }
+                _ => app.select_next_finger(),
+            },
+            KeyCode::Left => {
+                if app.dashboard_tab == DashboardTab::KeyboardHeatmap {
+                    app.move_heatmap_selection(0, -1);
+                }
+            }
+            KeyCode::Right => {
+                if app.dashboard_tab == DashboardTab::KeyboardHeatmap {
+                    app.move_heatmap_selection(0, 1);
+                }
+            }
+            KeyCode::PageUp => {
+                if app.dashboard_tab == DashboardTab::SessionHistory {
+                    app.history_page_up(10);
+                }
+            }
+            KeyCode::PageDown => {
+                if app.dashboard_tab == DashboardTab::SessionHistory {
+                    let count = app.filtered_sessions().len();
+                    app.history_page_down(count, 10);
+                }
+            }
+            KeyCode::Home => {
+                if app.dashboard_tab == DashboardTab::SessionHistory {
+                    app.history_first();
+                }
+            }
+            KeyCode::End => {
+                if app.dashboard_tab == DashboardTab::SessionHistory {
+                    let count = app.filtered_sessions().len();
+                    app.history_last(count);
+                }
+            }
             // Goes back to Setup rather than immediately starting a new
             // round, so the user can change level/training-mode between
             // rounds (or just hit Enter again to keep the same settings).

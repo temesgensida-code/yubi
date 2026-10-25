@@ -69,17 +69,21 @@ pub fn generate_for_finger(
     let mut rng = rand::thread_rng();
 
     let Some(finger) = finger else {
-        // No data yet: just shuffle the word bank.
-        let mut words: Vec<&str> = WORD_BANK.to_vec();
-        words.shuffle(&mut rng);
-        return words.into_iter().take(word_count).collect::<Vec<_>>().join(" ");
+        // No data yet: pick `word_count` random words from the word bank.
+        let mut result = Vec::with_capacity(word_count);
+        for _ in 0..word_count {
+            if let Some(w) = WORD_BANK.choose(&mut rng) {
+                result.push(*w);
+            }
+        }
+        return result.join(" ");
     };
 
     let mut scored: Vec<(&str, usize)> = WORD_BANK
         .iter()
         .map(|w| (*w, score_word(w, engine, finger)))
         .collect();
-    scored.sort_by(|a, b| b.1.cmp(&a.1));
+    scored.sort_by_key(|a| std::cmp::Reverse(a.1));
 
     // Top ~40% of the ranked bank is our "high value" pool; everything else
     // is the "general" pool used to keep the text varied.
