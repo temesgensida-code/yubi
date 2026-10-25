@@ -129,6 +129,12 @@ Yubi is an interactive terminal typing trainer designed to accelerate touch-typi
 ### Prerequisites
 - A working Rust toolchain (Rust 1.75+ recommended).
 
+### single run settup
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/temesgensida-code/yubi/main/install.sh | bash
+```
+ 
 ### Building from Source
 ```bash
 git clone https://github.com/temesgensida/yubi.git
