@@ -53,15 +53,22 @@ Yubi is an interactive terminal typing trainer designed to accelerate touch-typi
 - **In-TUI Slicing & Filter Engine**: Seamlessly filter all analytics by Time (`All`, `Last 7 Days`, `Last 30 Days`), Level, and Mode.
 
 ### 4. Advanced Training Content Banks
+- **Rust Programming Syntax Practice**: Dedicated programming practice domain featuring 8 core syntactic topics across 3 graduated difficulty levels (Beginner, Intermediate, Advanced):
+  1. *Ownership, Borrowing & Lifetimes*: References (`&T`, `&mut T`), raw pointers (`*ptr`), explicit lifetimes (`'a`, `'static`, `struct Buffer<'a>`), and `move` closures.
+  2. *Smart Pointers & Interior Mutability*: `Box::new()`, `Rc::clone(&item)`, thread-safe `Arc::new()`, `RefCell`, `Mutex`, `RwLock`, `Weak<T>`, and `Cow<'a, str>`.
+  3. *Data Structures & Collections*: `Vec::with_capacity()`, `HashMap::entry().or_insert()`, `BTreeMap`, `HashSet` intersections, `VecDeque`, turbofish syntax (`::<T>`), and custom structs/enums.
+  4. *Pattern Matching & Control Flow*: Exhaustive match blocks with guards (`Some(x) if x > 10 =>`), concise `if let Some(val) = opt`, `let ... else` early returns, and slice destructuring.
+  5. *Error Handling (Result & Option)*: The `?` propagation operator, chained combinators (`.map()`, `.and_then()`, `.unwrap_or_else()`, `.ok_or_else()`), and custom error formatting.
+  6. *Traits, Generics & Bounds*: Generic bounds (`<T: Clone + Debug>`), complex `where` clauses, dynamic dispatch (`Box<dyn Trait>` vs `impl Trait`), and derive attributes (`#[derive(Debug, Clone, PartialEq)]`).
+  7. *Iterators & Closures*: Pipe syntax (`|x| x * 2`, `move |a, b|`), iterator chains (`.iter().filter().map().collect::<Vec<_>>()`), and adapters (`.enumerate()`, `.zip()`, `.fold()`, `.flatten()`).
+  8. *Async, Concurrency & Macros*: `async fn` / `.await`, `tokio::spawn`, thread channels (`mpsc::channel()`, `tx.send()`, `rx.recv()`), and declarative macros (`println!`, `vec!`, `macro_rules!`).
+  - *Generous Syntax Concatenation*: Full code statements are concatenated generously up to your chosen word count without severing statements mid-token.
+  - *All Topics Mixed*: Drill across all 8 topics concurrently for comprehensive Rust motor fluency.
 - **Bigram Hesitation Ladder**: Automatically identifies the user's slowest transitions and generates 3-tier progressive drills:
   - *Tier 1*: Isolation Repeats (`qu qu qui que squ qua qu`)
   - *Tier 2*: Targeted Words (`quick queen equal square liquid`)
   - *Tier 3*: Context Sentences (`The quick queen required quiet squares.`)
-- **Developer Syntax & Code Mode**: Curated code banks across:
-  - *Rust Idioms*: Generics, lifetimes, match patterns, and standard library structs.
-  - *TypeScript*: Async/await generics, utility types, and arrow functions.
-  - *Python*: Async database queries, dataclasses, and list comprehensions.
-  - *Synthetic Symbol Sprints*: Intensive drills on brackets (`{}`, `[]`, `<>`), operators (`->`, `=>`, `::`, `!=`, `&&`, `||`), and variable naming conventions.
+- **Developer Syntax & Code Mode**: Curated code banks across TypeScript, Python, and synthetic symbol sprints (`{}`, `[]`, `<>`, `->`, `=>`, `::`, `!=`, `&&`, `||`).
 
 ### 5. Ergonomics & Customization
 - **Multi-Layout Support**: Native key attribution for **QWERTY**, **Colemak**, **Colemak-DH**, and **Dvorak**.
@@ -82,7 +89,7 @@ Yubi is an interactive terminal typing trainer designed to accelerate touch-typi
 ### Setup Screen
 | Key | Action |
 | :--- | :--- |
-| `↑` / `↓` / `Tab` | Switch settings field (Level, Mode, Length, Layout, Thumb, Pacer) |
+| `↑` / `↓` / `Tab` / `Shift+Tab` | Switch settings field (Domain, Topic/Mode, Level, Length, Layout, Thumb, Pacer) |
 | `←` / `→` | Cycle option values |
 | `Enter` | Launch typing round |
 | `F2` | Cycle color theme |

@@ -92,6 +92,118 @@ impl Level {
     pub fn prev(&self) -> Level {
         Level::ALL[(self.index() + Level::ALL.len() - 1) % Level::ALL.len()]
     }
+
+    pub fn label_for_domain(&self, domain: PracticeDomain) -> &'static str {
+        match domain {
+            PracticeDomain::NaturalLanguage => self.label(),
+            PracticeDomain::RustCode => match self {
+                Level::Beginner => "Beginner — basic syntax & bindings",
+                Level::Intermediate => "Intermediate — patterns & combinators",
+                Level::Advanced => "Advanced — lifetimes, async & macros",
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum PracticeDomain {
+    #[default]
+    NaturalLanguage,
+    RustCode,
+}
+
+impl PracticeDomain {
+    #[allow(dead_code)]
+    pub const ALL: [PracticeDomain; 2] = [
+        PracticeDomain::NaturalLanguage,
+        PracticeDomain::RustCode,
+    ];
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            PracticeDomain::NaturalLanguage => "Natural Language — Paragraphs",
+            PracticeDomain::RustCode => "Rust Code — Programming Syntax",
+        }
+    }
+
+    pub fn next(&self) -> PracticeDomain {
+        match self {
+            PracticeDomain::NaturalLanguage => PracticeDomain::RustCode,
+            PracticeDomain::RustCode => PracticeDomain::NaturalLanguage,
+        }
+    }
+
+    pub fn prev(&self) -> PracticeDomain {
+        self.next()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum RustTopic {
+    #[default]
+    All,
+    OwnershipLifetimes,
+    SmartPointers,
+    Collections,
+    PatternMatching,
+    ErrorHandling,
+    TraitsGenerics,
+    IteratorsClosures,
+    AsyncMacros,
+}
+
+impl RustTopic {
+    pub const ALL: [RustTopic; 9] = [
+        RustTopic::All,
+        RustTopic::OwnershipLifetimes,
+        RustTopic::SmartPointers,
+        RustTopic::Collections,
+        RustTopic::PatternMatching,
+        RustTopic::ErrorHandling,
+        RustTopic::TraitsGenerics,
+        RustTopic::IteratorsClosures,
+        RustTopic::AsyncMacros,
+    ];
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            RustTopic::All => "All Topics (Comprehensive Mixed)",
+            RustTopic::OwnershipLifetimes => "1. Ownership, Borrowing & Lifetimes",
+            RustTopic::SmartPointers => "2. Smart Pointers & Interior Mutability",
+            RustTopic::Collections => "3. Data Structures & Collections",
+            RustTopic::PatternMatching => "4. Pattern Matching & Control Flow",
+            RustTopic::ErrorHandling => "5. Error Handling (Result & Option)",
+            RustTopic::TraitsGenerics => "6. Traits, Generics & Bounds",
+            RustTopic::IteratorsClosures => "7. Iterators & Closures",
+            RustTopic::AsyncMacros => "8. Async, Concurrency & Macros",
+        }
+    }
+
+    pub fn short_name(&self) -> &'static str {
+        match self {
+            RustTopic::All => "All",
+            RustTopic::OwnershipLifetimes => "Lifetimes",
+            RustTopic::SmartPointers => "Pointers",
+            RustTopic::Collections => "Collections",
+            RustTopic::PatternMatching => "Patterns",
+            RustTopic::ErrorHandling => "Errors",
+            RustTopic::TraitsGenerics => "Traits",
+            RustTopic::IteratorsClosures => "Iterators",
+            RustTopic::AsyncMacros => "Async/Macros",
+        }
+    }
+
+    fn index(&self) -> usize {
+        RustTopic::ALL.iter().position(|t| t == self).unwrap_or(0)
+    }
+
+    pub fn next(&self) -> RustTopic {
+        RustTopic::ALL[(self.index() + 1) % RustTopic::ALL.len()]
+    }
+
+    pub fn prev(&self) -> RustTopic {
+        RustTopic::ALL[(self.index() + RustTopic::ALL.len() - 1) % RustTopic::ALL.len()]
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -238,14 +350,38 @@ impl RoundLength {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SetupField {
+    #[default]
+    Domain,
+    TopicOrTraining,
     Level,
-    Training,
     Length,
     Layout,
     Thumb,
     Pacer,
+}
+
+impl SetupField {
+    pub const ALL: [SetupField; 7] = [
+        SetupField::Domain,
+        SetupField::TopicOrTraining,
+        SetupField::Level,
+        SetupField::Length,
+        SetupField::Layout,
+        SetupField::Thumb,
+        SetupField::Pacer,
+    ];
+
+    pub fn next(&self) -> SetupField {
+        let idx = SetupField::ALL.iter().position(|f| f == self).unwrap_or(0);
+        SetupField::ALL[(idx + 1) % SetupField::ALL.len()]
+    }
+
+    pub fn prev(&self) -> SetupField {
+        let idx = SetupField::ALL.iter().position(|f| f == self).unwrap_or(0);
+        SetupField::ALL[(idx + SetupField::ALL.len() - 1) % SetupField::ALL.len()]
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -315,13 +451,17 @@ pub enum ModeFilter {
     All,
     Targeted,
     Random,
+    BigramLadder,
+    RustCode,
 }
 
 impl ModeFilter {
-    pub const ALL: [ModeFilter; 3] = [
+    pub const ALL: [ModeFilter; 5] = [
         ModeFilter::All,
         ModeFilter::Targeted,
         ModeFilter::Random,
+        ModeFilter::BigramLadder,
+        ModeFilter::RustCode,
     ];
 
     pub fn label(&self) -> &'static str {
@@ -329,6 +469,8 @@ impl ModeFilter {
             ModeFilter::All => "All",
             ModeFilter::Targeted => "Targeted",
             ModeFilter::Random => "Random",
+            ModeFilter::BigramLadder => "Bigram Ladder",
+            ModeFilter::RustCode => "Rust Code",
         }
     }
 
@@ -461,6 +603,8 @@ pub struct App {
     pub layout: KeyboardLayout,
     pub thumb_preference: ThumbPreference,
     pub ghost_pacer: GhostPacer,
+    pub practice_domain: PracticeDomain,
+    pub rust_topic: RustTopic,
     pub setup_focus: SetupField,
 
     /// `None` until the user answers the one-time consent prompt (see
@@ -536,6 +680,8 @@ impl App {
         };
 
         let theme_id = settings.theme_id.unwrap_or_default();
+        let practice_domain = settings.practice_domain.unwrap_or_default();
+        let rust_topic = settings.rust_topic.unwrap_or_default();
 
         App {
             engine,
@@ -551,7 +697,9 @@ impl App {
             layout,
             thumb_preference,
             ghost_pacer,
-            setup_focus: SetupField::Level,
+            practice_domain,
+            rust_topic,
+            setup_focus: SetupField::Domain,
             track_progress: settings.track_progress,
             target: Vec::new(),
             typed: Vec::new(),
@@ -603,6 +751,8 @@ impl App {
             thumb_preference: Some(self.thumb_preference),
             layout: Some(self.layout),
             pacer_mode: Some(self.ghost_pacer.mode),
+            practice_domain: Some(self.practice_domain),
+            rust_topic: Some(self.rust_topic),
         };
         // Best-effort: a failed settings write shouldn't crash a typing
         // round, so errors are swallowed here (unlike history saves, which
@@ -656,20 +806,25 @@ impl App {
     // ---- Setup screen ----------------------------------------------
 
     pub fn setup_toggle_focus(&mut self) {
-        self.setup_focus = match self.setup_focus {
-            SetupField::Level => SetupField::Training,
-            SetupField::Training => SetupField::Length,
-            SetupField::Length => SetupField::Layout,
-            SetupField::Layout => SetupField::Thumb,
-            SetupField::Thumb => SetupField::Pacer,
-            SetupField::Pacer => SetupField::Level,
-        };
+        self.setup_focus = self.setup_focus.next();
+    }
+
+    pub fn setup_focus_next(&mut self) {
+        self.setup_toggle_focus();
+    }
+
+    pub fn setup_focus_prev(&mut self) {
+        self.setup_focus = self.setup_focus.prev();
     }
 
     pub fn setup_cycle_left(&mut self) {
         match self.setup_focus {
+            SetupField::Domain => self.practice_domain = self.practice_domain.prev(),
+            SetupField::TopicOrTraining => match self.practice_domain {
+                PracticeDomain::NaturalLanguage => self.training_mode = self.training_mode.prev(),
+                PracticeDomain::RustCode => self.rust_topic = self.rust_topic.prev(),
+            },
             SetupField::Level => self.level = self.level.prev(),
-            SetupField::Training => self.training_mode = self.training_mode.prev(),
             SetupField::Length => self.round_length = self.round_length.prev(),
             SetupField::Layout => self.set_layout(self.layout.prev()),
             SetupField::Thumb => self.set_thumb_preference(self.thumb_preference.prev()),
@@ -682,8 +837,12 @@ impl App {
 
     pub fn setup_cycle_right(&mut self) {
         match self.setup_focus {
+            SetupField::Domain => self.practice_domain = self.practice_domain.next(),
+            SetupField::TopicOrTraining => match self.practice_domain {
+                PracticeDomain::NaturalLanguage => self.training_mode = self.training_mode.next(),
+                PracticeDomain::RustCode => self.rust_topic = self.rust_topic.next(),
+            },
             SetupField::Level => self.level = self.level.next(),
-            SetupField::Training => self.training_mode = self.training_mode.next(),
             SetupField::Length => self.round_length = self.round_length.next(),
             SetupField::Layout => self.set_layout(self.layout.next()),
             SetupField::Thumb => self.set_thumb_preference(self.thumb_preference.next()),
@@ -694,12 +853,20 @@ impl App {
 
     // ---- Typing round -----------------------------------------------
 
-    /// Builds fresh practice text from the current `level` + `training_mode`
+    /// Builds fresh practice text from current settings
     /// and enters `Mode::Typing`. Called from the Setup screen (Enter) and
     /// from the Dashboard's "practice again with same settings" flow.
     pub fn start_new_round(&mut self) {
         let slowest = self.latency_engine.slowest_bigrams(5);
-        self.target = build_target_text(&self.engine, &slowest, self.level, self.training_mode, self.round_length);
+        self.target = build_target_text(
+            &self.engine,
+            &slowest,
+            self.practice_domain,
+            self.rust_topic,
+            self.level,
+            self.training_mode,
+            self.round_length,
+        );
         self.typed.clear();
         self.engine.last_char = None;
         self.latency_engine.reset();
@@ -738,7 +905,15 @@ impl App {
             // Streaming replenishment: append words as user nears the end
             if self.target.len().saturating_sub(self.typed.len()) < 20 {
                 let slowest = self.latency_engine.slowest_bigrams(5);
-                let more = build_target_text(&self.engine, &slowest, self.level, self.training_mode, RoundLength::Words15);
+                let more = build_target_text(
+                    &self.engine,
+                    &slowest,
+                    self.practice_domain,
+                    self.rust_topic,
+                    self.level,
+                    self.training_mode,
+                    RoundLength::Words15,
+                );
                 if !self.target.is_empty() && self.target.last() != Some(&' ') {
                     self.target.push(' ');
                 }
@@ -965,11 +1140,14 @@ impl App {
                     Level::Intermediate => "Intermediate".to_string(),
                     Level::Advanced => "Advanced".to_string(),
                 }),
-                training_mode: Some(match self.training_mode {
-                    TrainingMode::FocusWeakest => "Targeted".to_string(),
-                    TrainingMode::Random => "Random".to_string(),
-                    TrainingMode::BigramLadder => "Bigram Ladder".to_string(),
-                    TrainingMode::CodeMode => "Code Syntax".to_string(),
+                training_mode: Some(match self.practice_domain {
+                    PracticeDomain::RustCode => format!("Rust: {}", self.rust_topic.short_name()),
+                    PracticeDomain::NaturalLanguage => match self.training_mode {
+                        TrainingMode::FocusWeakest => "Targeted".to_string(),
+                        TrainingMode::Random => "Random".to_string(),
+                        TrainingMode::BigramLadder => "Bigram Ladder".to_string(),
+                        TrainingMode::CodeMode => "Code Syntax".to_string(),
+                    },
                 }),
                 round_length: Some(match self.round_length {
                     RoundLength::Burst5 => "Burst".to_string(),
@@ -1245,6 +1423,8 @@ impl App {
                 ModeFilter::All => true,
                 ModeFilter::Targeted => s.training_mode.as_deref() == Some("Targeted"),
                 ModeFilter::Random => s.training_mode.as_deref() == Some("Random"),
+                ModeFilter::BigramLadder => s.training_mode.as_deref() == Some("Bigram Ladder"),
+                ModeFilter::RustCode => s.training_mode.as_deref().map_or(false, |m| m.starts_with("Rust:")),
             })
             .collect()
     }
@@ -1311,43 +1491,50 @@ impl App {
 fn build_target_text(
     engine: &TypingEngine,
     slowest_bigrams: &[((char, char), f64)],
+    domain: PracticeDomain,
+    rust_topic: RustTopic,
     level: Level,
     mode: TrainingMode,
     round_length: RoundLength,
 ) -> Vec<char> {
-    match mode {
-        TrainingMode::BigramLadder => {
-            crate::drills::bigrams::generate_bigram_drill(slowest_bigrams, level, round_length)
+    match domain {
+        PracticeDomain::RustCode => {
+            crate::drills::rust_drills::generate_rust_drill(rust_topic, level, round_length)
         }
-        TrainingMode::CodeMode => {
-            crate::drills::code::generate_code_drill(level, round_length)
-        }
-        TrainingMode::FocusWeakest => {
-            let target_finger = engine.get_most_faulty_finger().map(|(f, _)| f);
-            let word_count = round_length.word_count();
-            match level {
-                Level::Beginner => {
-                    let text = generator::generate_for_finger(engine, target_finger, word_count);
-                    text.chars().collect()
-                }
-                Level::Intermediate | Level::Advanced => match target_finger {
-                    Some(f) => paragraphs::pick_for_finger(f, level, word_count),
-                    None => paragraphs::pick_random(level, word_count),
-                },
+        PracticeDomain::NaturalLanguage => match mode {
+            TrainingMode::BigramLadder => {
+                crate::drills::bigrams::generate_bigram_drill(slowest_bigrams, level, round_length)
             }
-        }
-        TrainingMode::Random => {
-            let word_count = round_length.word_count();
-            match level {
-                Level::Beginner => {
-                    let text = generator::generate_for_finger(engine, None, word_count);
-                    text.chars().collect()
-                }
-                Level::Intermediate | Level::Advanced => {
-                    paragraphs::pick_random(level, word_count)
+            TrainingMode::CodeMode => {
+                crate::drills::code::generate_code_drill(level, round_length)
+            }
+            TrainingMode::FocusWeakest => {
+                let target_finger = engine.get_most_faulty_finger().map(|(f, _)| f);
+                let word_count = round_length.word_count();
+                match level {
+                    Level::Beginner => {
+                        let text = generator::generate_for_finger(engine, target_finger, word_count);
+                        text.chars().collect()
+                    }
+                    Level::Intermediate | Level::Advanced => match target_finger {
+                        Some(f) => paragraphs::pick_for_finger(f, level, word_count),
+                        None => paragraphs::pick_random(level, word_count),
+                    },
                 }
             }
-        }
+            TrainingMode::Random => {
+                let word_count = round_length.word_count();
+                match level {
+                    Level::Beginner => {
+                        let text = generator::generate_for_finger(engine, None, word_count);
+                        text.chars().collect()
+                    }
+                    Level::Intermediate | Level::Advanced => {
+                        paragraphs::pick_random(level, word_count)
+                    }
+                }
+            }
+        },
     }
 }
 
@@ -1449,6 +1636,7 @@ mod tests {
     #[test]
     fn test_debrief_summary_generation() {
         let mut app = App::new();
+        app.round_length = RoundLength::Words10;
         app.target = vec!['c', 'a', 't'];
         app.start_new_round();
         app.target = vec!['c', 'a', 't'];
@@ -1595,5 +1783,138 @@ mod tests {
         assert_eq!(app.history_table_state.selected(), Some(4));
         app.history_first();
         assert_eq!(app.history_table_state.selected(), Some(0));
+    }
+
+    #[test]
+    fn test_setup_field_navigation_and_domain_cycling() {
+        let mut app = App::new();
+        app.setup_focus = SetupField::Domain;
+
+        // Verify focus navigation
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::TopicOrTraining);
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::Level);
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::Length);
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::Layout);
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::Thumb);
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::Pacer);
+        app.setup_focus_next();
+        assert_eq!(app.setup_focus, SetupField::Domain);
+
+        app.setup_focus_prev();
+        assert_eq!(app.setup_focus, SetupField::Pacer);
+
+        // Verify domain cycling
+        app.setup_focus = SetupField::Domain;
+        app.practice_domain = PracticeDomain::NaturalLanguage;
+        app.setup_cycle_right();
+        assert_eq!(app.practice_domain, PracticeDomain::RustCode);
+        app.setup_cycle_right();
+        assert_eq!(app.practice_domain, PracticeDomain::NaturalLanguage);
+        app.setup_cycle_left();
+        assert_eq!(app.practice_domain, PracticeDomain::RustCode);
+
+        // Verify topic cycling when domain is RustCode
+        app.setup_focus = SetupField::TopicOrTraining;
+        app.rust_topic = RustTopic::OwnershipLifetimes;
+        app.setup_cycle_right();
+        assert_eq!(app.rust_topic, RustTopic::SmartPointers);
+        app.setup_cycle_left();
+        assert_eq!(app.rust_topic, RustTopic::OwnershipLifetimes);
+        app.setup_cycle_left();
+        assert_eq!(app.rust_topic, RustTopic::All);
+
+        // Verify training mode cycling when domain is NaturalLanguage
+        app.practice_domain = PracticeDomain::NaturalLanguage;
+        app.training_mode = TrainingMode::FocusWeakest;
+        app.setup_cycle_right();
+        assert_eq!(app.training_mode, TrainingMode::Random);
+    }
+
+    #[test]
+    fn test_rust_drill_generation_in_app() {
+        let app = App::new();
+        let slowest: Vec<((char, char), f64)> = vec![];
+
+        for topic in RustTopic::ALL {
+            for level in [Level::Beginner, Level::Intermediate, Level::Advanced] {
+                let target = build_target_text(
+                    &app.engine,
+                    &slowest,
+                    PracticeDomain::RustCode,
+                    topic,
+                    level,
+                    TrainingMode::FocusWeakest,
+                    RoundLength::Words15,
+                );
+                assert!(!target.is_empty(), "Failed target generation for {:?} at {:?}", topic, level);
+                let text: String = target.into_iter().collect();
+                assert!(text.contains(';') || text.contains('{') || text.contains('(') || text.contains(':') || text.contains('&') || text.contains('='),
+                    "Target for {:?} ({:?}) should contain code syntax: {}", topic, level, text);
+            }
+        }
+    }
+
+    #[test]
+    fn test_mode_filter_rust_code() {
+        let mut app = App::new();
+        app.history.sessions.clear();
+        let now = crate::persistence::current_unix_timestamp();
+
+        let rust_session = SessionSnapshot {
+            timestamp: now,
+            wpm: 55.0,
+            finger_accuracy: std::collections::HashMap::new(),
+            session_duration_secs: Some(30.0),
+            level: Some("Intermediate".to_string()),
+            training_mode: Some("Rust: Ownership & Lifetimes".to_string()),
+            round_length: Some("15 words".to_string()),
+            overall_accuracy: Some(96.0),
+            total_keystrokes: Some(120),
+            correct_keystrokes: Some(115),
+            error_count: Some(5),
+            finger_keystrokes: std::collections::HashMap::new(),
+            finger_errors: std::collections::HashMap::new(),
+            top_mistakes: None,
+            avg_iki_ms: Some(140.0),
+            consistency_pct: Some(90.0),
+        };
+
+        let nl_session = SessionSnapshot {
+            timestamp: now - 60,
+            wpm: 65.0,
+            finger_accuracy: std::collections::HashMap::new(),
+            session_duration_secs: Some(30.0),
+            level: Some("Intermediate".to_string()),
+            training_mode: Some("Targeted".to_string()),
+            round_length: Some("15 words".to_string()),
+            overall_accuracy: Some(98.0),
+            total_keystrokes: Some(140),
+            correct_keystrokes: Some(137),
+            error_count: Some(3),
+            finger_keystrokes: std::collections::HashMap::new(),
+            finger_errors: std::collections::HashMap::new(),
+            top_mistakes: None,
+            avg_iki_ms: Some(120.0),
+            consistency_pct: Some(92.0),
+        };
+
+        app.history.push(rust_session);
+        app.history.push(nl_session);
+
+        app.mode_filter = ModeFilter::RustCode;
+        let filtered = app.filtered_sessions();
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].training_mode.as_deref(), Some("Rust: Ownership & Lifetimes"));
+
+        app.mode_filter = ModeFilter::Targeted;
+        let filtered_targeted = app.filtered_sessions();
+        assert_eq!(filtered_targeted.len(), 1);
+        assert_eq!(filtered_targeted[0].training_mode.as_deref(), Some("Targeted"));
     }
 }

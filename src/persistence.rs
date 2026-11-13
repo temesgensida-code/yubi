@@ -185,6 +185,10 @@ pub struct AppSettings {
     pub layout: Option<crate::finger::KeyboardLayout>,
     #[serde(default)]
     pub pacer_mode: Option<crate::engine::pacer::PacerMode>,
+    #[serde(default)]
+    pub practice_domain: Option<crate::app::PracticeDomain>,
+    #[serde(default)]
+    pub rust_topic: Option<crate::app::RustTopic>,
 }
 
 impl Default for AppSettings {
@@ -198,6 +202,8 @@ impl Default for AppSettings {
             thumb_preference: None,
             layout: None,
             pacer_mode: None,
+            practice_domain: None,
+            rust_topic: None,
         }
     }
 }

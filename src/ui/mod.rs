@@ -105,13 +105,22 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     let subtitle = match app.mode {
         Mode::Consent => "y: yes, save my progress   n: no, don't save   F2: theme   Esc: quit".to_string(),
         Mode::Setup => "↑/↓ or Tab: switch field   ←/→: change value   Enter: start   F2: theme   Esc: quit".to_string(),
-        Mode::Typing => format!(
-            "{} • {} • {} • {} • F2: theme • Esc: quit • Backspace/Ctrl+W: correct",
-            app.layout.label(),
-            app.level.label(),
-            app.training_mode.label(),
-            app.round_length.label()
-        ),
+        Mode::Typing => match app.practice_domain {
+            crate::app::PracticeDomain::RustCode => format!(
+                "Rust: {} • {} • {} • {} • F2: theme • Esc: quit",
+                app.rust_topic.short_name(),
+                app.level.label_for_domain(app.practice_domain),
+                app.layout.label(),
+                app.round_length.label()
+            ),
+            crate::app::PracticeDomain::NaturalLanguage => format!(
+                "{} • {} • {} • {} • F2: theme • Esc: quit • Backspace/Ctrl+W: correct",
+                app.layout.label(),
+                app.level.label(),
+                app.training_mode.label(),
+                app.round_length.label()
+            ),
+        },
         Mode::Debrief => "r: retry same text • w: drill weak • Enter: next round • Tab: dashboard • Esc: setup".to_string(),
         Mode::Dashboard => format!(
             "Total Sessions: {}  •  F2: Theme ({})  •  r: Setup  •  Esc/q: Quit",
@@ -222,7 +231,7 @@ fn draw_setup(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     let logo_para = Paragraph::new(logo_text).alignment(Alignment::Center);
     frame.render_widget(logo_para, main_layout[0]);
 
-    let block_area = centered_rect(60, 20, main_layout[1]);
+    let block_area = centered_rect(68, 23, main_layout[1]);
     let rows = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -232,30 +241,51 @@ fn draw_setup(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
             Constraint::Length(3),
             Constraint::Length(3),
             Constraint::Length(3),
+            Constraint::Length(3),
         ])
         .split(block_area);
+
+    let domain_block = if app.setup_focus == SetupField::Domain {
+        theme.block_focused("Practice Type (focused)")
+    } else {
+        theme.block("Practice Type")
+    };
+    let domain_text = format!("◀   {}   ▶", app.practice_domain.label());
+    let domain_para = Paragraph::new(domain_text)
+        .alignment(Alignment::Center)
+        .block(domain_block);
+    frame.render_widget(domain_para, rows[0]);
+
+    let (topic_title, topic_text) = match app.practice_domain {
+        crate::app::PracticeDomain::NaturalLanguage => (
+            if app.setup_focus == SetupField::TopicOrTraining { "Training Mode (focused)" } else { "Training Mode" },
+            format!("◀   {}   ▶", app.training_mode.label()),
+        ),
+        crate::app::PracticeDomain::RustCode => (
+            if app.setup_focus == SetupField::TopicOrTraining { "Rust Topic (focused)" } else { "Rust Topic" },
+            format!("◀   {}   ▶", app.rust_topic.label()),
+        ),
+    };
+    let topic_block = if app.setup_focus == SetupField::TopicOrTraining {
+        theme.block_focused(topic_title)
+    } else {
+        theme.block(topic_title)
+    };
+    let topic_para = Paragraph::new(topic_text)
+        .alignment(Alignment::Center)
+        .block(topic_block);
+    frame.render_widget(topic_para, rows[1]);
 
     let level_block = if app.setup_focus == SetupField::Level {
         theme.block_focused("Difficulty (focused)")
     } else {
         theme.block("Difficulty")
     };
-    let level_text = format!("◀   {}   ▶", app.level.label());
+    let level_text = format!("◀   {}   ▶", app.level.label_for_domain(app.practice_domain));
     let level_para = Paragraph::new(level_text)
         .alignment(Alignment::Center)
         .block(level_block);
-    frame.render_widget(level_para, rows[0]);
-
-    let training_block = if app.setup_focus == SetupField::Training {
-        theme.block_focused("Training Mode (focused)")
-    } else {
-        theme.block("Training Mode")
-    };
-    let training_text = format!("◀   {}   ▶", app.training_mode.label());
-    let training_para = Paragraph::new(training_text)
-        .alignment(Alignment::Center)
-        .block(training_block);
-    frame.render_widget(training_para, rows[1]);
+    frame.render_widget(level_para, rows[2]);
 
     let length_block = if app.setup_focus == SetupField::Length {
         theme.block_focused("Round Length (focused)")
@@ -266,7 +296,7 @@ fn draw_setup(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     let length_para = Paragraph::new(length_text)
         .alignment(Alignment::Center)
         .block(length_block);
-    frame.render_widget(length_para, rows[2]);
+    frame.render_widget(length_para, rows[3]);
 
     let layout_block = if app.setup_focus == SetupField::Layout {
         theme.block_focused("Keyboard Layout (focused)")
@@ -277,7 +307,7 @@ fn draw_setup(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     let layout_para = Paragraph::new(layout_text)
         .alignment(Alignment::Center)
         .block(layout_block);
-    frame.render_widget(layout_para, rows[3]);
+    frame.render_widget(layout_para, rows[4]);
 
     let thumb_block = if app.setup_focus == SetupField::Thumb {
         theme.block_focused("Spacebar Thumb (focused)")
@@ -288,7 +318,7 @@ fn draw_setup(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     let thumb_para = Paragraph::new(thumb_text)
         .alignment(Alignment::Center)
         .block(thumb_block);
-    frame.render_widget(thumb_para, rows[4]);
+    frame.render_widget(thumb_para, rows[5]);
 
     let pacer_block = if app.setup_focus == SetupField::Pacer {
         theme.block_focused("Ghost Pacer (focused)")
@@ -299,7 +329,7 @@ fn draw_setup(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     let pacer_para = Paragraph::new(pacer_text)
         .alignment(Alignment::Center)
         .block(pacer_block);
-    frame.render_widget(pacer_para, rows[5]);
+    frame.render_widget(pacer_para, rows[6]);
 }
 
 // ---------------------------------------------------------------------

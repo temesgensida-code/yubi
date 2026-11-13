@@ -139,7 +139,8 @@ fn handle_key(app: &mut App, key: KeyEvent) {
         },
         Mode::Setup => match key.code {
             KeyCode::Esc => app.should_quit = true,
-            KeyCode::Up | KeyCode::Down | KeyCode::Tab => app.setup_toggle_focus(),
+            KeyCode::Down | KeyCode::Tab => app.setup_focus_next(),
+            KeyCode::Up | KeyCode::BackTab => app.setup_focus_prev(),
             KeyCode::Left => app.setup_cycle_left(),
             KeyCode::Right => app.setup_cycle_right(),
             KeyCode::Enter => app.start_new_round(),
@@ -174,6 +175,7 @@ fn handle_key(app: &mut App, key: KeyEvent) {
                 app.mode = Mode::Typing;
             }
             KeyCode::Char('w') => {
+                app.practice_domain = crate::app::PracticeDomain::NaturalLanguage;
                 app.training_mode = crate::app::TrainingMode::FocusWeakest;
                 app.start_new_round();
             }

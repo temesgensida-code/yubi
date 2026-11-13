@@ -158,11 +158,15 @@ fn draw_level_table(frame: &mut Frame, area: Rect, sessions: &[&SessionSnapshot]
 fn draw_mode_table(frame: &mut Frame, area: Rect, sessions: &[&SessionSnapshot], theme: &Theme) {
     let mut targeted = CategoryMetrics::default();
     let mut random = CategoryMetrics::default();
+    let mut bigram = CategoryMetrics::default();
+    let mut rust_code = CategoryMetrics::default();
 
     for s in sessions {
         match s.training_mode.as_deref() {
             Some("Targeted") => targeted.add(s),
             Some("Random") => random.add(s),
+            Some("Bigram Ladder") => bigram.add(s),
+            Some(m) if m.starts_with("Rust:") => rust_code.add(s),
             _ => {}
         }
     }
@@ -186,6 +190,8 @@ fn draw_mode_table(frame: &mut Frame, area: Rect, sessions: &[&SessionSnapshot],
     let modes = [
         ("Targeted (Focus Weakest Finger)", &targeted),
         ("Random (Standard Distribution)", &random),
+        ("Bigram Hesitation Ladder", &bigram),
+        ("Rust Code Practice", &rust_code),
     ];
 
     let rows: Vec<Row> = modes

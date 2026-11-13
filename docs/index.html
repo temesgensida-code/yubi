@@ -231,6 +231,24 @@
           In addition to standard natural language paragraphs, Yubi provides targeted curriculum engines to eliminate specific motor hesitations and develop coding fluency.
         </p>
 
+        <h3>Rust Programming Syntax Practice Engine</h3>
+        <p>
+          A dedicated programming curriculum designed to build automatic finger-memory for real-world Rust idioms, nested brackets, punctuation, and type signatures across three graduated tiers (Beginner, Intermediate, and Advanced):
+        </p>
+        <ol>
+          <li><strong>Ownership, Borrowing &amp; Lifetimes:</strong> Shared and mutable references (<code>&amp;T</code>, <code>&amp;mut T</code>), dereferencing (<code>*ptr</code>), explicit lifetime signatures (<code>'a</code>, <code>'static</code>, <code>struct Buffer&lt;'a&gt;</code>), and <code>move</code> closures.</li>
+          <li><strong>Smart Pointers &amp; Interior Mutability:</strong> Heap allocation and atomic reference counting (<code>Box::new()</code>, <code>Rc::clone(&amp;item)</code>, <code>Arc::new()</code>), interior mutability guards (<code>RefCell</code>, <code>Mutex</code>, <code>RwLock</code>), <code>Weak&lt;T&gt;</code>, and <code>Cow&lt;'a, str&gt;</code>.</li>
+          <li><strong>Data Structures &amp; Collections:</strong> Standard collections (<code>Vec::with_capacity()</code>, <code>HashMap::entry().or_insert()</code>, <code>BTreeMap</code>, <code>HashSet</code>, <code>VecDeque</code>), turbofish syntax (<code>::&lt;T&gt;</code>), and custom structs/enums.</li>
+          <li><strong>Pattern Matching &amp; Control Flow:</strong> Exhaustive match statements with guards (<code>Some(x) if x &gt; 10 =&gt;</code>), <code>if let Some(val) = opt</code>, <code>let ... else</code> guard statements, and nested slice/struct destructuring.</li>
+          <li><strong>Error Handling (Result &amp; Option):</strong> The <code>?</code> propagation operator, chained combinators (<code>.map()</code>, <code>.and_then()</code>, <code>.unwrap_or_else()</code>, <code>.ok_or_else()</code>), and custom error formatting.</li>
+          <li><strong>Traits, Generics &amp; Bounds:</strong> Generic function bounds (<code>&lt;T: Clone + Debug&gt;</code>), complex <code>where</code> clauses, dynamic dispatch (<code>Box&lt;dyn Trait&gt;</code> vs <code>impl Trait</code>), and common derive macros.</li>
+          <li><strong>Iterators &amp; Closures:</strong> Idiomatic pipe closures (<code>|x| x * 2</code>, <code>move |a, b|</code>), chain pipelines (<code>.iter().filter().map().collect::&lt;Vec&lt;_&gt;&gt;()</code>), and adapters (<code>.enumerate()</code>, <code>.zip()</code>, <code>.fold()</code>, <code>.flatten()</code>).</li>
+          <li><strong>Async, Concurrency &amp; Macros:</strong> Modern asynchronous syntax (<code>async fn</code>, <code>.await</code>, <code>tokio::spawn</code>), thread channels (<code>mpsc::channel()</code>, <code>tx.send()</code>, <code>rx.recv()</code>), and declarative macros (<code>println!</code>, <code>vec!</code>, <code>macro_rules!</code>).</li>
+        </ol>
+        <p>
+          <strong>Generous Statement Concatenation:</strong> Complete syntactic statements are concatenated generously up to the chosen word count so code constructs are never severed mid-token. Practice rounds are tagged by topic in session history and can be analyzed independently in the Level Comparison dashboard.
+        </p>
+
         <h3>Bigram Hesitation Ladder</h3>
         <p>
           The bigram engine identifies transitions where your measured IKI latency is significantly higher than your baseline average, and generates an automated 3-tier progressive drill:
@@ -243,13 +261,8 @@
 
         <h3>Developer Syntax / Code Mode</h3>
         <p>
-          Curated programming exercises targeting language-specific keywords, naming conventions, and syntax punctuation:
+          Curated programming exercises targeting language-specific keywords, naming conventions, and syntax punctuation across TypeScript, Python, and synthetic symbol sprints (<code>{}</code>, <code>()</code>, <code>[]</code>, <code>=&gt;</code>, <code>-&gt;</code>, <code>::</code>, <code>!=</code>, <code>&amp;&amp;</code>, <code>||</code>).
         </p>
-        <ul>
-          <li><strong>Rust Idioms:</strong> Pattern matching (<code>match</code>, <code>Some</code>, <code>Result</code>), lifetime annotations, generics, and standard traits.</li>
-          <li><strong>TypeScript &amp; Python:</strong> Async/await syntax, arrow functions, dataclasses, decorators, and list comprehensions.</li>
-          <li><strong>Synthetic Symbol Sprints:</strong> Focused punctuation drills isolating programming brackets and operators (<code>{}</code>, <code>()</code>, <code>[]</code>, <code>=&gt;</code>, <code>-&gt;</code>, <code>::</code>, <code>!=</code>, <code>&amp;&amp;</code>, <code>||</code>).</li>
-        </ul>
 
         <h3>Configurable Paragraph Lengths</h3>
         <p>
@@ -310,8 +323,8 @@
               <!-- Setup Screen -->
               <tr>
                 <td>Setup Screen</td>
-                <td><kbd>&uarr;</kbd> <kbd>&darr;</kbd> / <kbd>Tab</kbd></td>
-                <td>Navigate settings field (Level, Mode, Length, Layout, Thumb, Pacer)</td>
+                <td><kbd>&uarr;</kbd> <kbd>&darr;</kbd> / <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td>
+                <td>Navigate settings field (Domain, Topic/Mode, Level, Length, Layout, Thumb, Pacer)</td>
               </tr>
               <tr>
                 <td>Setup Screen</td>
