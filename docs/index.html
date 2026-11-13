@@ -45,7 +45,7 @@
         <li class="sidebar-item"><a href="#speed-acceleration" class="sidebar-link">2. Speed Acceleration</a></li>
         <li class="sidebar-item"><a href="#sensory-biofeedback" class="sidebar-link">3. Sensory Biofeedback</a></li>
         <li class="sidebar-item"><a href="#in-terminal-analytics" class="sidebar-link">4. In-Terminal Analytics</a></li>
-        <li class="sidebar-item"><a href="#training-drills" class="sidebar-link">5. Training Drills</a></li>
+        <li class="sidebar-item"><a href="#training-drills" class="sidebar-link">5. Training Drills &amp; Rust</a></li>
         <li class="sidebar-item"><a href="#ergonomics-settings" class="sidebar-link">6. Ergonomics &amp; Layouts</a></li>
         <li class="sidebar-item"><a href="#keyboard-shortcuts" class="sidebar-link">7. Keyboard Shortcuts</a></li>
         <li class="sidebar-item"><a href="#installation-setup" class="sidebar-link">8. Installation &amp; Setup</a></li>
@@ -59,11 +59,15 @@
       <section id="overview" class="doc-section">
         <h1>Yubi Documentation</h1>
         <p class="lead">
-          Biomechanical touch-typing trainer and real-time sensory biofeedback engine built natively in 100% Rust and Ratatui.
+          Biomechanical touch-typing trainer and real-time sensory biofeedback engine built natively in 100% Rust and Ratatui — supporting both natural language prose and dedicated Rust programming syntax practice.
         </p>
 
         <p>
           Yubi is engineered to eliminate cognitive hesitation latencies and systematically transition typists from conscious finger reaches to automatic neuromuscular reflex loops. Running entirely inside your terminal with sub-millisecond execution times, zero browser overhead, and zero telemetry, all typing metrics, bigram hesitation records, and progression curves are computed and stored purely on local disk.
+        </p>
+
+        <p>
+          <strong>Rust Language Practice Support:</strong> Alongside natural language paragraphs, Yubi includes a built-in Rust programming curriculum featuring 8 core topics (Lifetimes, Smart Pointers, Collections, Pattern Matching, Error Handling, Traits, Iterators, and Async/Macros) formatted with canonical 4-space indentation, smart auto-indent typing, and left-aligned editor styling.
         </p>
 
         <p>
@@ -245,6 +249,9 @@
           <li><strong>Iterators &amp; Closures:</strong> Idiomatic pipe closures (<code>|x| x * 2</code>, <code>move |a, b|</code>), chain pipelines (<code>.iter().filter().map().collect::&lt;Vec&lt;_&gt;&gt;()</code>), and adapters (<code>.enumerate()</code>, <code>.zip()</code>, <code>.fold()</code>, <code>.flatten()</code>).</li>
           <li><strong>Async, Concurrency &amp; Macros:</strong> Modern asynchronous syntax (<code>async fn</code>, <code>.await</code>, <code>tokio::spawn</code>), thread channels (<code>mpsc::channel()</code>, <code>tx.send()</code>, <code>rx.recv()</code>), and declarative macros (<code>println!</code>, <code>vec!</code>, <code>macro_rules!</code>).</li>
         </ol>
+        <p>
+          <strong>Canonical Formatting &amp; Smart Auto-Indent:</strong> Code snippets follow canonical <code>rustfmt</code> 4-space indentation with a visual left gutter. When typing, smart auto-indent automatically advances past leading indentation spaces so you can focus directly on coding rhythm without mashing the spacebar.
+        </p>
         <p>
           <strong>Generous Statement Concatenation:</strong> Complete syntactic statements are concatenated generously up to the chosen word count so code constructs are never severed mid-token. Practice rounds are tagged by topic in session history and can be analyzed independently in the Level Comparison dashboard.
         </p>
