@@ -548,7 +548,12 @@ fn draw_target_text(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
             current_spans.push(Span::styled(expected.to_string(), style));
         }
     }
-    lines.push(Line::from(current_spans));
+    let is_rust = app.practice_domain == crate::app::PracticeDomain::RustCode;
+    if is_rust {
+        for line in &mut lines {
+            line.spans.insert(0, Span::raw("    "));
+        }
+    }
 
     let pacer_badge = if app.ghost_pacer.is_active() {
         format!(" [Pacer: {}]", app.ghost_pacer.mode.label())
@@ -562,7 +567,8 @@ fn draw_target_text(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     };
     let title = format!("Type this{mode_badge}{pacer_badge}");
 
-    let inner_width = area.width.saturating_sub(2).max(10) as usize;
+    let gutter_margin: u16 = if is_rust { 4 } else { 0 };
+    let inner_width = area.width.saturating_sub(2 + gutter_margin).max(10) as usize;
     let inner_height = area.height.saturating_sub(2);
 
     let (cursor_line, total_lines) = cursor_line_and_total_lines(&app.target, app.typed.len(), inner_width);

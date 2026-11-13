@@ -878,6 +878,21 @@ impl App {
         self.last_wpm_sample_at = Instant::now();
         self.mode = Mode::Typing;
         self.status_message = None;
+        self.auto_advance_leading_indent();
+    }
+
+    /// Automatically advances past leading indentation spaces on a new line for code drills.
+    fn auto_advance_leading_indent(&mut self) {
+        if self.practice_domain != PracticeDomain::RustCode {
+            return;
+        }
+        while let Some(&' ') = self.target.get(self.typed.len()) {
+            self.typed.push(TypedChar {
+                expected: ' ',
+                actual: ' ',
+                at: Instant::now(),
+            });
+        }
     }
 
     /// Handles one printable character typed by the user during a typing
@@ -894,6 +909,7 @@ impl App {
                 actual: '\n',
                 at: Instant::now(),
             });
+            self.auto_advance_leading_indent();
         }
 
         let idx = self.typed.len();
@@ -913,6 +929,11 @@ impl App {
             actual,
             at: Instant::now(),
         });
+
+        // If user typed Enter for a newline, auto-advance past any leading indentation on the new line
+        if expected == '\n' && actual == '\n' {
+            self.auto_advance_leading_indent();
+        }
 
         if self.round_length.is_timed_sprint() {
             // Streaming replenishment: append words as user nears the end
@@ -950,6 +971,33 @@ impl App {
     /// keystroke from engine statistics - the mistake genuinely happened
     /// and stays in the analytics; only the visible buffer rewinds.
     pub fn handle_backspace(&mut self) {
+        if self.typed.is_empty() {
+            return;
+        }
+
+        // Smart Back-Skip for code drills:
+        // If cursor is at the start of an indented line (preceded only by leading spaces and a newline),
+        // pop all leading spaces and the newline in one go so cursor returns to end of previous line.
+        if self.practice_domain == PracticeDomain::RustCode {
+            if let Some(last) = self.typed.last() {
+                if last.expected == ' ' && last.actual == ' ' {
+                    let mut idx = self.typed.len() - 1;
+                    while idx > 0 && self.typed[idx].expected == ' ' {
+                        idx -= 1;
+                    }
+                    if self.typed[idx].expected == '\n' {
+                        // Pop all leading spaces after the newline:
+                        while self.typed.len() > idx + 1 {
+                            self.typed.pop();
+                        }
+                        // Now pop the newline itself
+                        self.typed.pop();
+                        return;
+                    }
+                }
+            }
+        }
+
         self.typed.pop();
     }
 
@@ -2028,5 +2076,73 @@ mod tests {
         assert!(text.contains('\n'), "Generated Rust drill must contain newlines between statements: {}", text);
         let lines: Vec<&str> = text.lines().collect();
         assert!(lines.len() >= 2, "Expected multiple lines in Rust drill, got {}", lines.len());
+    }
+
+    #[test]
+    fn test_auto_advance_leading_indent_and_smart_backspace() {
+        let mut app = App::new();
+        app.practice_domain = PracticeDomain::RustCode;
+        app.round_length = RoundLength::Words10;
+        // Target: "{\n    x;\n}"
+        app.target = vec!['{', '\n', ' ', ' ', ' ', ' ', 'x', ';', '\n', '}'];
+        app.start_new_round();
+        app.practice_domain = PracticeDomain::RustCode;
+        app.target = vec!['{', '\n', ' ', ' ', ' ', ' ', 'x', ';', '\n', '}'];
+
+        // Type '{'
+        app.handle_char_input('{');
+        assert_eq!(app.typed.len(), 1);
+
+        // Type '\n' (Enter key)
+        app.handle_char_input('\n');
+        // Smart auto-indent should have automatically filled '\n' AND the 4 leading spaces!
+        // So typed.len() should now be 1 ('{') + 1 ('\n') + 4 (' ') = 6!
+        assert_eq!(app.typed.len(), 6);
+        assert_eq!(app.typed[1].expected, '\n');
+        assert_eq!(app.typed[2].expected, ' ');
+        assert_eq!(app.typed[3].expected, ' ');
+        assert_eq!(app.typed[4].expected, ' ');
+        assert_eq!(app.typed[5].expected, ' ');
+
+        // Smart Back-skip: Pressing Backspace from the start of the indented line
+        // should pop all 4 leading spaces AND the newline in one press, landing back at '{'!
+        app.handle_backspace();
+        assert_eq!(app.typed.len(), 1);
+        assert_eq!(app.typed[0].expected, '{');
+
+        // Now test auto-advance when typing directly: type '\n' again
+        app.handle_char_input('\n');
+        assert_eq!(app.typed.len(), 6);
+
+        // Type 'x'
+        app.handle_char_input('x');
+        assert_eq!(app.typed.len(), 7);
+        assert_eq!(app.typed[6].expected, 'x');
+
+        // Backspacing 'x' should pop only 'x'
+        app.handle_backspace();
+        assert_eq!(app.typed.len(), 6);
+
+        // Another backspace should smart back-skip to '{'
+        app.handle_backspace();
+        assert_eq!(app.typed.len(), 1);
+        assert_eq!(app.typed[0].expected, '{');
+    }
+
+    #[test]
+    fn test_rust_drill_has_four_space_indentation() {
+        let app = App::new();
+        let slowest: Vec<((char, char), f64)> = vec![];
+        let target = build_target_text(
+            &app.engine,
+            &slowest,
+            PracticeDomain::RustCode,
+            RustTopic::SmartPointers,
+            Level::Intermediate,
+            TrainingMode::FocusWeakest,
+            RoundLength::Words30,
+        );
+        let text: String = target.into_iter().collect();
+        assert!(text.contains("\n    "), "Rust code drills must contain 4-space indented blocks: {}", text);
     }
 }
