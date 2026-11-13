@@ -527,6 +527,8 @@ impl TypingEngine {
                 ThumbPreference::LeftOnly => Finger::LeftThumb,
                 ThumbPreference::AutoAlternate => resolve_space_finger(prev, self),
             })
+        } else if c == '\n' {
+            Some(Finger::RightPinky)
         } else {
             self.keymap.get(&c).copied()
         }

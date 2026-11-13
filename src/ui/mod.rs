@@ -344,11 +344,11 @@ fn current_word_bounds(target: &[char], cursor: usize) -> (usize, usize) {
     }
     let idx = cursor.min(target.len() - 1);
     let mut start = idx;
-    while start > 0 && target[start - 1] != ' ' {
+    while start > 0 && target[start - 1] != ' ' && target[start - 1] != '\n' {
         start -= 1;
     }
     let mut end = idx;
-    while end < target.len() && target[end] != ' ' {
+    while end < target.len() && target[end] != ' ' && target[end] != '\n' {
         end += 1;
     }
     (start, end)
@@ -418,7 +418,11 @@ fn cursor_line_and_total_lines(target: &[char], cursor: usize, width: usize) -> 
         if i == cursor {
             cursor_line = line;
         }
-        if target[i] == ' ' {
+        if target[i] == '\n' {
+            line += 1;
+            col = 0;
+            i += 1;
+        } else if target[i] == ' ' {
             col += 1;
             if col >= width {
                 line += 1;
@@ -427,7 +431,7 @@ fn cursor_line_and_total_lines(target: &[char], cursor: usize, width: usize) -> 
             i += 1;
         } else {
             let mut w_end = i;
-            while w_end < target.len() && target[w_end] != ' ' {
+            while w_end < target.len() && target[w_end] != ' ' && target[w_end] != '\n' {
                 w_end += 1;
             }
             let word_len = w_end - i;
@@ -481,15 +485,17 @@ fn draw_target_text(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
 
     let slice_start = if app.round_length.is_timed_sprint() && app.typed.len() > 50 {
         let mut s = app.typed.len().saturating_sub(35);
-        while s > 0 && app.target.get(s) != Some(&' ') {
+        while s > 0 && app.target.get(s) != Some(&' ') && app.target.get(s) != Some(&'\n') {
             s -= 1;
         }
-        if app.target.get(s) == Some(&' ') { s + 1 } else { s }
+        if app.target.get(s) == Some(&' ') || app.target.get(s) == Some(&'\n') { s + 1 } else { s }
     } else {
         0
     };
 
-    let mut spans: Vec<Span> = Vec::with_capacity(app.target.len() - slice_start);
+    let mut lines: Vec<Line> = Vec::new();
+    let mut current_spans: Vec<Span> = Vec::new();
+
     for (i, expected) in app.target.iter().enumerate().skip(slice_start) {
         let in_current_word = i >= word_start && i < word_end;
         let is_ghost = ghost_idx == Some(i);
@@ -532,8 +538,17 @@ fn draw_target_text(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
         } else {
             Style::default().fg(theme.untyped)
         };
-        spans.push(Span::styled(expected.to_string(), style));
+
+        if *expected == '\n' {
+            if i == app.typed.len() {
+                current_spans.push(Span::styled(" ", style));
+            }
+            lines.push(Line::from(std::mem::take(&mut current_spans)));
+        } else {
+            current_spans.push(Span::styled(expected.to_string(), style));
+        }
     }
+    lines.push(Line::from(current_spans));
 
     let pacer_badge = if app.ghost_pacer.is_active() {
         format!(" [Pacer: {}]", app.ghost_pacer.mode.label())
@@ -561,9 +576,14 @@ fn draw_target_text(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
         0
     };
 
-    let mut paragraph = Paragraph::new(Line::from(spans))
+    let alignment = match app.practice_domain {
+        crate::app::PracticeDomain::RustCode => Alignment::Left,
+        crate::app::PracticeDomain::NaturalLanguage => Alignment::Center,
+    };
+
+    let mut paragraph = Paragraph::new(lines)
         .block(theme.block(&title))
-        .alignment(Alignment::Center)
+        .alignment(alignment)
         .wrap(Wrap { trim: false });
     if scroll_y > 0 {
         paragraph = paragraph.scroll((scroll_y, 0));

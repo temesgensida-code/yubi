@@ -163,6 +163,9 @@ fn handle_key(app: &mut App, key: KeyEvent) {
             match key.code {
                 KeyCode::Esc => app.should_quit = true,
                 KeyCode::Backspace => app.handle_backspace(),
+                KeyCode::Enter => {
+                    app.handle_char_input('\n');
+                }
                 KeyCode::Char(c) => {
                     app.handle_char_input(c);
                 }

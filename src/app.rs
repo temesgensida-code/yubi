@@ -883,6 +883,19 @@ impl App {
     /// Handles one printable character typed by the user during a typing
     /// round. Returns `true` if this keystroke completed the round.
     pub fn handle_char_input(&mut self, actual: char) -> bool {
+        // Auto-advance past newline markers in code drills if user types the next character directly.
+        // If user explicitly pressed Enter (actual == '\n'), we do not skip so it matches the expected '\n'.
+        while let Some(&'\n') = self.target.get(self.typed.len()) {
+            if actual == '\n' {
+                break;
+            }
+            self.typed.push(TypedChar {
+                expected: '\n',
+                actual: '\n',
+                at: Instant::now(),
+            });
+        }
+
         let idx = self.typed.len();
         let Some(expected) = self.target.get(idx).copied() else {
             return true; // already complete, ignore stray input
@@ -914,8 +927,12 @@ impl App {
                     self.training_mode,
                     RoundLength::Words15,
                 );
-                if !self.target.is_empty() && self.target.last() != Some(&' ') {
-                    self.target.push(' ');
+                let sep = match self.practice_domain {
+                    PracticeDomain::RustCode => '\n',
+                    PracticeDomain::NaturalLanguage => ' ',
+                };
+                if !self.target.is_empty() && self.target.last() != Some(&sep) {
+                    self.target.push(sep);
                 }
                 self.target.extend(more);
             }
@@ -943,18 +960,18 @@ impl App {
             return;
         }
 
-        // Step 1: Strip trailing spaces if user is on whitespace boundary
+        // Step 1: Strip trailing spaces/newlines if user is on whitespace boundary
         while let Some(last) = self.typed.last() {
-            if last.actual == ' ' {
+            if last.actual == ' ' || last.actual == '\n' {
                 self.typed.pop();
             } else {
                 break;
             }
         }
 
-        // Step 2: Strip word characters up to previous whitespace
+        // Step 2: Strip word characters up to previous whitespace or newline
         while let Some(last) = self.typed.last() {
-            if last.actual != ' ' {
+            if last.actual != ' ' && last.actual != '\n' {
                 self.typed.pop();
             } else {
                 break;
@@ -1916,5 +1933,100 @@ mod tests {
         let filtered_targeted = app.filtered_sessions();
         assert_eq!(filtered_targeted.len(), 1);
         assert_eq!(filtered_targeted[0].training_mode.as_deref(), Some("Targeted"));
+    }
+
+    #[test]
+    fn test_newline_auto_advance_and_explicit_enter() {
+        let mut app = App::new();
+        app.round_length = RoundLength::Words10;
+        app.target = vec!['a', ';', '\n', 'b', ';'];
+        app.start_new_round();
+        app.target = vec!['a', ';', '\n', 'b', ';'];
+
+        // Test 1: Typing 'a', then ';', then 'b' should auto-advance past '\n'
+        app.handle_char_input('a');
+        app.handle_char_input(';');
+        // Cursor is now at '\n'. User directly types 'b' (no Enter key):
+        app.handle_char_input('b');
+        // 'typed' should contain 'a', ';', '\n' (auto-advanced), and 'b'
+        assert_eq!(app.typed.len(), 4);
+        assert_eq!(app.typed[2].expected, '\n');
+        assert_eq!(app.typed[2].actual, '\n');
+        assert_eq!(app.typed[3].expected, 'b');
+        assert_eq!(app.typed[3].actual, 'b');
+
+        // Test 2: Explicit Enter press
+        let mut app2 = App::new();
+        app2.round_length = RoundLength::Words10;
+        app2.target = vec!['x', '\n', 'y'];
+        app2.start_new_round();
+        app2.target = vec!['x', '\n', 'y'];
+
+        app2.handle_char_input('x');
+        // Explicit Enter
+        app2.handle_char_input('\n');
+        assert_eq!(app2.typed.len(), 2);
+        assert_eq!(app2.typed[1].expected, '\n');
+        assert_eq!(app2.typed[1].actual, '\n');
+        assert!(app2.typed[1].is_correct());
+        app2.handle_char_input('y');
+        assert_eq!(app2.typed.len(), 3);
+        assert_eq!(app2.mode, Mode::Debrief);
+    }
+
+    #[test]
+    fn test_handle_delete_word_across_newlines() {
+        let mut app = App::new();
+        let chars = "let a = 1;\nlet b = 2;";
+        for c in chars.chars() {
+            app.typed.push(TypedChar {
+                expected: c,
+                actual: c,
+                at: Instant::now(),
+            });
+        }
+        // First delete word should delete "2;"
+        app.handle_delete_word();
+        let remaining: String = app.typed.iter().map(|t| t.actual).collect();
+        assert_eq!(remaining, "let a = 1;\nlet b = ");
+
+        // Second delete word should delete "="
+        app.handle_delete_word();
+        let remaining: String = app.typed.iter().map(|t| t.actual).collect();
+        assert_eq!(remaining, "let a = 1;\nlet b ");
+
+        // Third delete word should delete "b"
+        app.handle_delete_word();
+        let remaining: String = app.typed.iter().map(|t| t.actual).collect();
+        assert_eq!(remaining, "let a = 1;\nlet ");
+
+        // Fourth delete word should delete "let" (leaving the newline of previous line)
+        app.handle_delete_word();
+        let remaining: String = app.typed.iter().map(|t| t.actual).collect();
+        assert_eq!(remaining, "let a = 1;\n");
+
+        // Fifth delete word strips the newline and "1;"
+        app.handle_delete_word();
+        let remaining: String = app.typed.iter().map(|t| t.actual).collect();
+        assert_eq!(remaining, "let a = ");
+    }
+
+    #[test]
+    fn test_rust_drill_contains_newlines_between_statements() {
+        let app = App::new();
+        let slowest: Vec<((char, char), f64)> = vec![];
+        let target = build_target_text(
+            &app.engine,
+            &slowest,
+            PracticeDomain::RustCode,
+            RustTopic::OwnershipLifetimes,
+            Level::Beginner,
+            TrainingMode::FocusWeakest,
+            RoundLength::Words20,
+        );
+        let text: String = target.into_iter().collect();
+        assert!(text.contains('\n'), "Generated Rust drill must contain newlines between statements: {}", text);
+        let lines: Vec<&str> = text.lines().collect();
+        assert!(lines.len() >= 2, "Expected multiple lines in Rust drill, got {}", lines.len());
     }
 }

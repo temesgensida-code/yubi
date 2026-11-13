@@ -15,23 +15,23 @@ use rand::thread_rng;
 // =========================================================================
 
 pub const OWNERSHIP_BEGINNER: &[&str] = &[
-    "let s: String = String::from(\"hello\"); let ref_s: &String = &s;",
-    "let mut count: i32 = 42; let ref_mut: &mut i32 = &mut count; *ref_mut += 1;",
-    "let val: u64 = 100; let ptr: *const u64 = &val as *const u64;",
-    "let name = String::from(\"yubi\"); let borrowed: &str = &name[..];",
-    "let greeting = \"hello world\"; let len: usize = greeting.len();",
-    "let x: i32 = 10; let y = x; println!(\"x = {}, y = {}\", x, y);",
-    "let mut text = String::from(\"buffer\"); text.push_str(\"_ready\");",
-    "let raw_num: usize = 128; let num_ref: &usize = &raw_num;",
+    "let s: String = String::from(\"hello\");\nlet ref_s: &String = &s;",
+    "let mut count: i32 = 42;\nlet ref_mut: &mut i32 = &mut count;\n*ref_mut += 1;",
+    "let val: u64 = 100;\nlet ptr: *const u64 = &val as *const u64;",
+    "let name = String::from(\"yubi\");\nlet borrowed: &str = &name[..];",
+    "let greeting = \"hello world\";\nlet len: usize = greeting.len();",
+    "let x: i32 = 10;\nlet y = x;\nprintln!(\"x = {}, y = {}\", x, y);",
+    "let mut text = String::from(\"buffer\");\ntext.push_str(\"_ready\");",
+    "let raw_num: usize = 128;\nlet num_ref: &usize = &raw_num;",
 ];
 
 pub const OWNERSHIP_INTERMEDIATE: &[&str] = &[
     "fn calculate_len(s: &str) -> usize { s.trim().len() }",
     "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str { if x.len() > y.len() { x } else { y } }",
     "struct Buffer<'a> { data: &'a [u8], pos: usize }",
-    "let text = String::from(\"tokio\"); let consumer = move || println!(\"moved: {}\", text);",
+    "let text = String::from(\"tokio\");\nlet consumer = move || println!(\"moved: {}\", text);",
     "fn split_first<'a, T>(slice: &'a [T]) -> Option<(&'a T, &'a [T])> { slice.split_first() }",
-    "let mut data = vec![1, 2, 3]; for item in &mut data { *item *= 2; }",
+    "let mut data = vec![1, 2, 3];\nfor item in &mut data { *item *= 2; }",
     "fn find_substr<'a>(haystack: &'a str, needle: &str) -> Option<&'a str> { haystack.find(needle).map(|i| &haystack[i..]) }",
     "pub struct RefHolder<'a> { value: &'a mut i32 }",
 ];
@@ -50,19 +50,19 @@ pub const OWNERSHIP_ADVANCED: &[&str] = &[
 // =========================================================================
 
 pub const POINTERS_BEGINNER: &[&str] = &[
-    "let b: Box<i32> = Box::new(42); assert_eq!(*b, 42);",
-    "let rc = std::rc::Rc::new(String::from(\"shared\")); let clone = std::rc::Rc::clone(&rc);",
-    "let arc = std::sync::Arc::new(100u32); let shared = std::sync::Arc::clone(&arc);",
-    "let cell = std::cell::Cell::new(10); cell.set(20); assert_eq!(cell.get(), 20);",
+    "let b: Box<i32> = Box::new(42);\nassert_eq!(*b, 42);",
+    "let rc = std::rc::Rc::new(String::from(\"shared\"));\nlet clone = std::rc::Rc::clone(&rc);",
+    "let arc = std::sync::Arc::new(100u32);\nlet shared = std::sync::Arc::clone(&arc);",
+    "let cell = std::cell::Cell::new(10);\ncell.set(20);\nassert_eq!(cell.get(), 20);",
     "let cow: std::borrow::Cow<'static, str> = std::borrow::Cow::Borrowed(\"immutable\");",
     "let boxed_slice: Box<[u8]> = vec![0x10, 0x20, 0x30].into_boxed_slice();",
 ];
 
 pub const POINTERS_INTERMEDIATE: &[&str] = &[
-    "let refcell = std::cell::RefCell::new(vec![1, 2, 3]); refcell.borrow_mut().push(4);",
-    "let mutex = std::sync::Mutex::new(0); { let mut lock = mutex.lock().unwrap(); *lock += 1; }",
-    "let rwlock = std::sync::RwLock::new(HashMap::new()); let r = rwlock.read().unwrap();",
-    "let weak: std::sync::Weak<String> = std::sync::Arc::downgrade(&arc); if let Some(strong) = weak.upgrade() { ... }",
+    "let refcell = std::cell::RefCell::new(vec![1, 2, 3]);\nrefcell.borrow_mut().push(4);",
+    "let mutex = std::sync::Mutex::new(0);\n{ let mut lock = mutex.lock().unwrap(); *lock += 1; }",
+    "let rwlock = std::sync::RwLock::new(HashMap::new());\nlet r = rwlock.read().unwrap();",
+    "let weak: std::sync::Weak<String> = std::sync::Arc::downgrade(&arc);\nif let Some(strong) = weak.upgrade() { ... }",
     "fn process_text<'a>(input: &'a str) -> std::borrow::Cow<'a, str> { if input.contains(' ') { Cow::Owned(input.replace(' ', \"_\")) } else { Cow::Borrowed(input) } }",
     "let state: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::with_capacity(16)));",
 ];
@@ -81,23 +81,23 @@ pub const POINTERS_ADVANCED: &[&str] = &[
 // =========================================================================
 
 pub const COLLECTIONS_BEGINNER: &[&str] = &[
-    "let mut vec: Vec<i32> = Vec::new(); vec.push(10); vec.push(20);",
-    "let mut map: HashMap<&str, i32> = HashMap::new(); map.insert(\"apple\", 3);",
-    "let mut set: HashSet<u32> = HashSet::new(); set.insert(42);",
-    "struct Point(f64, f64); let origin = Point(0.0, 0.0);",
-    "enum Status { Active, Inactive, Pending } let s = Status::Active;",
+    "let mut vec: Vec<i32> = Vec::new();\nvec.push(10);\nvec.push(20);",
+    "let mut map: HashMap<&str, i32> = HashMap::new();\nmap.insert(\"apple\", 3);",
+    "let mut set: HashSet<u32> = HashSet::new();\nset.insert(42);",
+    "struct Point(f64, f64);\nlet origin = Point(0.0, 0.0);",
+    "enum Status { Active, Inactive, Pending }\nlet s = Status::Active;",
     "let capacity_vec: Vec<String> = Vec::with_capacity(64);",
-    "let numbers = vec![1, 2, 3, 4, 5]; assert_eq!(numbers.len(), 5);",
+    "let numbers = vec![1, 2, 3, 4, 5];\nassert_eq!(numbers.len(), 5);",
 ];
 
 pub const COLLECTIONS_INTERMEDIATE: &[&str] = &[
-    "let mut map = HashMap::new(); *map.entry(\"counter\").or_insert(0) += 1;",
-    "let mut deque: VecDeque<Task> = VecDeque::with_capacity(64); deque.push_back(task); deque.pop_front();",
+    "let mut map = HashMap::new();\n*map.entry(\"counter\").or_insert(0) += 1;",
+    "let mut deque: VecDeque<Task> = VecDeque::with_capacity(64);\ndeque.push_back(task);\ndeque.pop_front();",
     "let btree: BTreeMap<String, Vec<u8>> = BTreeMap::new();",
     "let intersection: HashSet<_> = set_a.intersection(&set_b).cloned().collect();",
     "enum Message { Quit, Move { x: i32, y: i32 }, Write(String), ChangeColor(i32, i32, i32) }",
     "let mut registry: HashMap<u64, Vec<String>> = HashMap::with_capacity(128);",
-    "let mut sorted_set: BTreeSet<i64> = BTreeSet::new(); sorted_set.insert(100);",
+    "let mut sorted_set: BTreeSet<i64> = BTreeSet::new();\nsorted_set.insert(100);",
 ];
 
 pub const COLLECTIONS_ADVANCED: &[&str] = &[
@@ -118,7 +118,7 @@ pub const PATTERNS_BEGINNER: &[&str] = &[
     "match number { 1 => \"one\", 2 => \"two\", 3 => \"three\", _ => \"many\" };",
     "let is_positive = match x { n if n > 0 => true, _ => false };",
     "while let Some(item) = queue.pop() { handle(item); }",
-    "let (a, b) = (10, 20); assert_eq!(a + b, 30);",
+    "let (a, b) = (10, 20);\nassert_eq!(a + b, 30);",
     "if let Ok(result) = parse_val(input) { return result; }",
 ];
 
@@ -207,7 +207,7 @@ pub const ITERATORS_BEGINNER: &[&str] = &[
     "let squares: Vec<i32> = (1..=10).map(|x| x * x).collect();",
     "let sum: i32 = vec![1, 2, 3, 4, 5].into_iter().sum();",
     "let evens: Vec<_> = numbers.into_iter().filter(|n| n % 2 == 0).collect();",
-    "let add_five = |x: i32| -> i32 { x + 5 }; assert_eq!(add_five(10), 15);",
+    "let add_five = |x: i32| -> i32 { x + 5 };\nassert_eq!(add_five(10), 15);",
     "for (idx, ch) in \"hello\".chars().enumerate() { println!(\"{}: {}\", idx, ch); }",
     "let any_match = flags.iter().any(|&f| f == target_flag);",
 ];
@@ -243,10 +243,10 @@ pub const ASYNC_BEGINNER: &[&str] = &[
 ];
 
 pub const ASYNC_INTERMEDIATE: &[&str] = &[
-    "let handle = std::thread::spawn(move || { compute_heavy_task() }); let result = handle.join().unwrap();",
-    "let (tx, rx) = std::sync::mpsc::channel(); tx.send(Event::Ping).unwrap();",
+    "let handle = std::thread::spawn(move || { compute_heavy_task() });\nlet result = handle.join().unwrap();",
+    "let (tx, rx) = std::sync::mpsc::channel();\ntx.send(Event::Ping).unwrap();",
     "async fn fetch_user(client: &reqwest::Client, url: &str) -> Result<User, reqwest::Error> { client.get(url).send().await?.json::<User>().await }",
-    "let mut stream = tokio::time::interval(std::time::Duration::from_secs(1)); stream.tick().await;",
+    "let mut stream = tokio::time::interval(std::time::Duration::from_secs(1));\nstream.tick().await;",
     "macro_rules! map { ($($k:expr => $v:expr),* $(,)?) => {{ let mut m = std::collections::HashMap::new(); $(m.insert($k, $v);)* m }}; }",
     "tokio::spawn(async move { if let Err(e) = process_socket(socket).await { log_error(e); } });",
 ];
@@ -338,7 +338,7 @@ pub fn generate_rust_drill(topic: RustTopic, level: Level, length: RoundLength) 
         pool_idx += 1;
     }
 
-    chosen_snippets.join(" ").chars().collect()
+    chosen_snippets.join("\n").chars().collect()
 }
 
 #[cfg(test)]
